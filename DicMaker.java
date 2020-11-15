@@ -2,6 +2,9 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.util.Properties;
 
 import jdbm.RecordManager;
@@ -29,7 +32,7 @@ public class DicMaker {
 
     try {
       // open database and setup an object cache
-      recman = RecordManagerFactory.createRecordManager("C:/skk_dict_btree", props );
+      recman = RecordManagerFactory.createRecordManager("skk_dict_btree", props );
 
       // try to reload an existing B+Tree
       recid = recman.getNamedObject( BTREE_NAME );
@@ -50,8 +53,11 @@ public class DicMaker {
       InputStreamReader fr = null;  
       BufferedReader br = null;
 
-      FileInputStream fis = new FileInputStream("C:/android-sdk-windows-1.5_r1/tools/skk_L_dic_for_android_sorted.utf8");
-      fr = new InputStreamReader(fis, "UTF-8");
+      FileInputStream fis = new FileInputStream("mazedict-utf8-sorted.txt");
+      CharsetDecoder decoder = Charset.forName("UTF-8").newDecoder();
+      decoder.onMalformedInput(CodingErrorAction.REPORT);
+      decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+      fr = new InputStreamReader(fis, decoder);
       br = new BufferedReader(fr);
 
       int c = 0;
@@ -73,6 +79,7 @@ public class DicMaker {
 
       // make the data persistent in the database
       recman.commit();
+      recman.close();
 
     } catch ( Exception e ) {
       throw new RuntimeException(e);
