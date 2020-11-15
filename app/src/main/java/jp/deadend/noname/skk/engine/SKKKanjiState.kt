@@ -28,40 +28,42 @@ object SKKKanjiState : SKKState {
                 composing.setLength(0)
             }
         }
-        if (pcodeLower == 'q'.toInt()) {
-            // カタカナ変換
-            if (kanjiKey.isNotEmpty()) {
-                val str = hirakana2katakana(kanjiKey.toString())
-                if (str != null) context.commitTextSKK(str, 1)
-            }
-            context.changeState(SKKHiraganaState)
-        } else if (pcodeLower == ' '.toInt() || pcodeLower == '>'.toInt()) {
+//        if (pcodeLower == 'q'.toInt()) {
+//            // カタカナ変換
+//            if (kanjiKey.isNotEmpty()) {
+//                val str = hirakana2katakana(kanjiKey.toString())
+//                if (str != null) context.commitTextSKK(str, 1)
+//            }
+//            context.changeState(SKKHiraganaState)
+//        } else if (pcodeLower == ' '.toInt() || pcodeLower == '>'.toInt()) {
+//            // 変換開始
+//            // 最後に単体の'n'で終わっている場合、'ん'に変換
+//            if (composing.length == 1 && composing[0] == 'n') {
+//                kanjiKey.append('ん')
+//                context.setComposingTextSKK(kanjiKey, 1)
+//            }
+//            if (pcodeLower == '>'.toInt()) kanjiKey.append('>') // 接頭辞入力
+        if (pcodeLower == ' '.toInt()) {
             // 変換開始
-            // 最後に単体の'n'で終わっている場合、'ん'に変換
-            if (composing.length == 1 && composing[0] == 'n') {
-                kanjiKey.append('ん')
-                context.setComposingTextSKK(kanjiKey, 1)
-            }
-            if (pcodeLower == '>'.toInt()) kanjiKey.append('>') // 接頭辞入力
             composing.setLength(0)
             context.conversionStart(kanjiKey)
-        } else if (isUpper && kanjiKey.isNotEmpty()) {
-            // 送り仮名開始
-            // 最初の平仮名はついシフトキーを押しっぱなしにしてしまうた
-            // め、kanjiKeyの長さをチェックkanjiKeyの長さが0の時はシフトが
-            // 押されていなかったことにして下方へ継続させる
-            kanjiKey.append(pcodeLower.toChar()) //送りありの場合子音文字追加
-            composing.setLength(0)
-            if (isVowel(pcodeLower)) { // 母音なら送り仮名決定，変換
-                context.mOkurigana = RomajiConverter.convert(pcodeLower.toChar().toString())
-                context.conversionStart(kanjiKey)
-            } else { // それ以外は送り仮名モード
-                composing.append(pcodeLower.toChar())
-                context.setComposingTextSKK(
-                        createTrimmedBuilder(kanjiKey).append('*').append(pcodeLower.toChar()), 1
-                )
-                context.changeState(SKKOkuriganaState)
-            }
+//        } else if (isUpper && kanjiKey.isNotEmpty()) {
+//            // 送り仮名開始
+//            // 最初の平仮名はついシフトキーを押しっぱなしにしてしまうた
+//            // め、kanjiKeyの長さをチェックkanjiKeyの長さが0の時はシフトが
+//            // 押されていなかったことにして下方へ継続させる
+//            kanjiKey.append(pcodeLower.toChar()) //送りありの場合子音文字追加
+//            composing.setLength(0)
+//            if (isVowel(pcodeLower)) { // 母音なら送り仮名決定，変換
+//                context.mOkurigana = RomajiConverter.convert(pcodeLower.toChar().toString())
+//                context.conversionStart(kanjiKey)
+//            } else { // それ以外は送り仮名モード
+//                composing.append(pcodeLower.toChar())
+//                context.setComposingTextSKK(
+//                        createTrimmedBuilder(kanjiKey).append('*').append(pcodeLower.toChar()), 1
+//                )
+//                context.changeState(SKKOkuriganaState)
+//            }
         } else {
             // 未確定
             composing.append(pcodeLower.toChar())

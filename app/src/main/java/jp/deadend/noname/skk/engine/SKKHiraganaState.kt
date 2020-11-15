@@ -50,7 +50,8 @@ object SKKHiraganaState : SKKState {
             if (hchr != null) { // 確定できるものがあれば確定
                 commitFunc(context, hchr)
             } else { // アルファベットならComposingに積む
-                if (isAlphabet(pcodeLower)) {
+                // TODO: pcodeLower is in Romaji
+                if (isAlphabet(pcodeLower) || pcodeLower == ';'.toInt() || pcodeLower == ','.toInt() || pcodeLower == '.'.toInt() || pcodeLower == '/'.toInt()) {
                     context.setComposingTextSKK(composing, 1)
                 } else {
                     context.commitTextSKK(composing, 1)

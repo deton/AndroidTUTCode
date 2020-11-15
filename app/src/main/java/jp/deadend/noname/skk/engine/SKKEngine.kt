@@ -354,7 +354,7 @@ class SKKEngine(
         }
     }
 
-    internal fun getZenkakuSeparator(key: String) = mZenkakuSeparatorMap[key]
+    internal fun getZenkakuSeparator(key: String) = null
 
     /**
      * setComposingTextのラッパー 変換モードマーク等を追加する
@@ -641,7 +641,7 @@ class SKKEngine(
     internal fun changeInputMode(pcode: Int, toKatakana: Boolean): Boolean {
         // 入力モード変更操作．変更したらtrue
         when (pcode) {
-            'q'.toInt() -> {
+            '\''.toInt() -> {
                 if (toKatakana) {
                     changeState(SKKKatakanaState)
                 } else {
@@ -649,20 +649,20 @@ class SKKEngine(
                 }
                 return true
             }
-            'l'.toInt() ->  {
-                if (mComposing.length != 1 || mComposing[0] != 'z') {
-                    changeState(SKKASCIIState)
-                    return true
-                }
-            } // 「→」を入力するための例外
-            'L'.toInt() -> {
-                changeState(SKKZenkakuState)
-                return true
-            }
-            '/'.toInt() -> if (mComposing.isEmpty()) {
-                changeState(SKKAbbrevState)
-                return true
-            }
+//            'l'.toInt() ->  {
+//                if (mComposing.length != 1 || mComposing[0] != 'z') {
+//                    changeState(SKKASCIIState)
+//                    return true
+//                }
+//            } // 「→」を入力するための例外
+//            'L'.toInt() -> {
+//                changeState(SKKZenkakuState)
+//                return true
+//            }
+//            '/'.toInt() -> if (mComposing.isEmpty()) {
+//                changeState(SKKAbbrevState)
+//                return true
+//            }
         }
 
         return false
