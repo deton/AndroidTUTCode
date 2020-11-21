@@ -115,7 +115,7 @@ class SKKEngine(
     fun handleEnter(): Boolean {
         when (state) {
             SKKChooseState, SKKNarrowingState -> pickCandidate(mCurrentCandidateIndex)
-            SKKKanjiState, SKKOkuriganaState, SKKAbbrevState -> {
+            SKKKanjiState, SKKAbbrevState -> {
                 commitTextSKK(mKanjiKey, 1)
                 changeState(SKKHiraganaState)
             }
@@ -384,7 +384,7 @@ class SKKEngine(
             ct.append(regInfo.entry)
         }
 
-        if (state === SKKAbbrevState || state === SKKKanjiState || state === SKKOkuriganaState) {
+        if (state === SKKAbbrevState || state === SKKKanjiState) {
             ct.append("▽")
         } else if (state === SKKChooseState || state === SKKNarrowingState) {
             ct.append("▼")

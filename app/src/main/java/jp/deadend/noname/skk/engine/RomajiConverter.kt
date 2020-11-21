@@ -4,6 +4,7 @@ import jp.deadend.noname.skk.isVowel
 
 object RomajiConverter {
     private val mRomajiMap = mapOf(
+            "alj" to "@maze",
             "q " to "“",
             "w " to "～",
             "e " to "ー",

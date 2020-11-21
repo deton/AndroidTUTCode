@@ -19,21 +19,21 @@ object SKKChooseState : SKKState {
     override fun processKey(context: SKKEngine, pcode: Int) {
         when (pcode) {
             ' '.toInt() -> context.chooseAdjacentCandidate(true)
-            'x'.toInt() -> context.chooseAdjacentCandidate(false)
-            '>'.toInt() -> {
-                // 接尾辞入力
-                context.pickCurrentCandidate()
-                context.changeState(SKKKanjiState)
-                val kanjiKey = context.mKanjiKey
-                kanjiKey.append('>')
-                context.setComposingTextSKK(kanjiKey, 1)
-            }
-            'l'.toInt() -> {
-                // 暗黙の確定
-                context.pickCurrentCandidate()
-                context.changeState(SKKASCIIState)
-            }
-            ':'.toInt() -> context.changeState(SKKNarrowingState)
+            '!'.toInt() -> context.chooseAdjacentCandidate(false)
+//            '>'.toInt() -> {
+//                // 接尾辞入力
+//                context.pickCurrentCandidate()
+//                context.changeState(SKKKanjiState)
+//                val kanjiKey = context.mKanjiKey
+//                kanjiKey.append('>')
+//                context.setComposingTextSKK(kanjiKey, 1)
+//            }
+//            'l'.toInt() -> {
+//                // 暗黙の確定
+//                context.pickCurrentCandidate()
+//                context.changeState(SKKASCIIState)
+//            }
+//            ':'.toInt() -> context.changeState(SKKNarrowingState)
             else -> {
                 // 暗黙の確定
                 context.pickCurrentCandidate()

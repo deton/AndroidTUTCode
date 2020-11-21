@@ -23,41 +23,25 @@ object SKKHiraganaState : SKKState {
             (SKKEngine, String) -> Unit
     ) {
         val composing = context.mComposing
-
-        // シフトキーの状態をチェック
-        val isUpper = Character.isUpperCase(pcode)
-        // 大文字なら，ローマ字変換のために小文字に戻す
-        val pcodeLower = if (isUpper) Character.toLowerCase(pcode) else pcode
-
-        if (composing.length == 1) {
-            val hchr = RomajiConverter.checkSpecialConsonants(composing[0], pcodeLower)
-            if (hchr != null) commitFunc(context, hchr)
-        }
-        if (isUpper) {
-            // 漢字変換候補入力の開始。KanjiModeへの移行
-            if (composing.isNotEmpty()) {
-                context.commitTextSKK(composing, 1)
-                composing.setLength(0)
-            }
-            context.changeState(SKKKanjiState)
-            SKKKanjiState.processKey(context, pcodeLower)
-        } else {
-            composing.append(pcodeLower.toChar())
-            // 全角にする記号ならば全角，そうでなければローマ字変換
-            val hchr = context.getZenkakuSeparator(composing.toString())
-                    ?: RomajiConverter.convert(composing.toString())
-
-            if (hchr != null) { // 確定できるものがあれば確定
-                commitFunc(context, hchr)
-            } else { // アルファベットならComposingに積む
-                // TODO: pcodeLower is in Romaji
-                if (isAlphabet(pcodeLower) || pcodeLower == ';'.toInt() || pcodeLower == ','.toInt() || pcodeLower == '.'.toInt() || pcodeLower == '/'.toInt()) {
+        composing.append(pcode.toChar())
+        val hchr = RomajiConverter.convert(composing.toString())
+        when (hchr) {
+            null -> {
+                if (isAlphabet(pcode) || pcode == ';'.toInt() || pcode == ','.toInt() || pcode == '.'.toInt() || pcode == '/'.toInt()) {
+                    // ローマ字内の文字ならComposingに積む
+                    // TODO: pcode is in Romaji
                     context.setComposingTextSKK(composing, 1)
                 } else {
                     context.commitTextSKK(composing, 1)
                     composing.setLength(0)
                 }
             }
+            "@maze" -> { // 漢字変換候補入力の開始。KanjiModeへの移行
+                composing.setLength(0)
+                context.changeState(SKKKanjiState)
+                context.setComposingTextSKK("", 1);
+            }
+            else -> commitFunc(context, hchr) // 確定できるものがあれば確定
         }
     }
 
