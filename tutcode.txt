@@ -1,3 +1,4 @@
+'	@tglkata
 alj	@maze
 q 	“
 w 	～

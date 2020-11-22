@@ -647,30 +647,16 @@ class SKKEngine(
 
     internal fun changeInputMode(pcode: Int, toKatakana: Boolean): Boolean {
         // 入力モード変更操作．変更したらtrue
-        when (pcode) {
-            '\''.toInt() -> {
-                if (toKatakana) {
-                    changeState(SKKKatakanaState)
-                } else {
-                    changeState(SKKHiraganaState)
-                }
-                return true
-            }
-//            'l'.toInt() ->  {
-//                if (mComposing.length != 1 || mComposing[0] != 'z') {
-//                    changeState(SKKASCIIState)
-//                    return true
+//        when (pcode) {
+//            '\''.toInt() -> {
+//                if (toKatakana) {
+//                    changeState(SKKKatakanaState)
+//                } else {
+//                    changeState(SKKHiraganaState)
 //                }
-//            } // 「→」を入力するための例外
-//            'L'.toInt() -> {
-//                changeState(SKKZenkakuState)
 //                return true
 //            }
-//            '/'.toInt() -> if (mComposing.isEmpty()) {
-//                changeState(SKKAbbrevState)
-//                return true
-//            }
-        }
+//        }
 
         return false
     }

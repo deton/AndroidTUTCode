@@ -32,6 +32,14 @@ object SKKHiraganaState : SKKState {
             "@cont" -> { // ローマ字内の文字ならComposingに積む
                 context.setComposingTextSKK(composing, 1)
             }
+            "@tglkata" -> { // カタカナひらがなモードトグル
+                composing.setLength(0)
+                if (context.state === SKKHiraganaState) {
+                    context.changeState(SKKKatakanaState)
+                } else if (context.state === SKKKatakanaState) {
+                    context.changeState(SKKHiraganaState)
+                }
+            }
             "@maze" -> { // 漢字変換候補入力の開始。KanjiModeへの移行
                 composing.setLength(0)
                 context.changeState(SKKKanjiState)
