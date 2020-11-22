@@ -2,6 +2,11 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:seekbar="http://schemas.android.com/apk/res/jp.deadend.noname.skk"
 	android:title="@string/label_pref_activity">
+	<Preference
+		android:key="@string/prefkey_import_romajimap"
+		android:title="漢字表インポート"
+		android:summary="TUT-Code以外を使う場合用" >
+	</Preference>
 	<ListPreference
 		android:key="@string/prefkey_kutouten_type"
 		android:title="句読点のタイプ"

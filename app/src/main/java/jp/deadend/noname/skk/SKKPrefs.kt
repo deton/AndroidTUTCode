@@ -1,13 +1,17 @@
 package jp.deadend.noname.skk
 
+import android.app.Activity
 import android.os.Bundle
 import android.content.Context
+import android.content.Intent
 import android.preference.CheckBoxPreference
 import android.preference.Preference.OnPreferenceClickListener
 import android.preference.PreferenceActivity
 import android.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatDelegate
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
+import java.io.*
 
 class SKKPrefs : PreferenceActivity() {
     private val delegate: AppCompatDelegate by lazy {
@@ -32,6 +36,20 @@ class SKKPrefs : PreferenceActivity() {
 
         delegate.supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
+        val importRomajiMapPr = findPreference(getString(R.string.prefkey_import_romajimap))
+        val externalStorageDir = getExternalFilesDir(null)
+        if (externalStorageDir != null) {
+            importRomajiMapPr.onPreferenceClickListener = OnPreferenceClickListener {
+                val intent = Intent(this@SKKPrefs, FileChooser::class.java)
+                intent.putExtra(FileChooser.KEY_MODE, FileChooser.MODE_OPEN)
+                intent.putExtra(FileChooser.KEY_DIRNAME, externalStorageDir.path)
+                startActivityForResult(intent, SKKPrefs.REQUEST_ROMAJIMAP)
+                true
+            }
+        } else {
+            importRomajiMapPr.setEnabled(false)
+        }
+
         val stickyPr = findPreference(getString(R.string.prefkey_sticky_meta)) as CheckBoxPreference
         val sandsPr = findPreference(getString(R.string.prefkey_sands)) as CheckBoxPreference
         stickyPr.onPreferenceClickListener = OnPreferenceClickListener {
@@ -50,6 +68,36 @@ class SKKPrefs : PreferenceActivity() {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
+        if (requestCode != SKKPrefs.REQUEST_ROMAJIMAP) {
+            return
+        }
+        if (resultCode != Activity.RESULT_OK) {
+            return
+        }
+        val filepath = intent?.getStringExtra(FileChooser.KEY_FILEPATH) ?: return
+        try {
+            // 一度読んでparseしてみて問題がないことを確認する
+            val romajimap = File(filepath).useLines { lines ->
+                lines.associate { line ->
+                    line.split("\t").let {
+                        it[0] to it[1]
+                    }
+                }
+            }
+            File(filepath).copyTo(File(filesDir, SKKService.FILENAME_ROMAJIMAP), overwrite = true)
+        } catch (e: IOException) {
+            Toast.makeText(
+                    this@SKKPrefs, getString(R.string.error_file_load, filepath),
+                    Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+        val inputMethodManager =
+                getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        inputMethodManager.sendAppPrivateCommand(null, SKKService.ACTION_RELOAD_ROMAJIMAP, null)
+    }
+
     override fun onPause() {
         super.onPause()
 
@@ -58,6 +106,8 @@ class SKKPrefs : PreferenceActivity() {
     }
 
     companion object {
+        private const val REQUEST_ROMAJIMAP = 0
+
         private fun getPrefs(context: Context) = PreferenceManager.getDefaultSharedPreferences(context)
 
         fun getKutoutenType(context: Context): String = getPrefs(context)

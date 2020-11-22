@@ -24,6 +24,7 @@ import android.widget.Toast
 
 import jp.deadend.noname.skk.engine.*
 import java.io.BufferedReader
+import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.charset.CharacterCodingException
@@ -129,31 +130,40 @@ class SKKService : InputMethodService() {
     }
 
     private fun loadRomajiMap(): Map<String, String> {
-        val decoder = Charset.forName("UTF-8").newDecoder()
-        decoder.onMalformedInput(CodingErrorAction.REPORT)
-        decoder.onUnmappableCharacter(CodingErrorAction.REPORT)
+        val importedFile = File(filesDir, FILENAME_ROMAJIMAP)
+        if (importedFile.exists()) {
+            try {
+                return importedFile.useLines { lines ->
+                    lines.associate { line ->
+                        line.split("\t").let {
+                            it[0] to it[1]
+                        }
+                    }
+                }
+            } catch (e: IOException) {
+                Toast.makeText(
+                        this@SKKService, getString(R.string.error_file_load, importedFile.path),
+                        Toast.LENGTH_LONG
+                ).show()
+                // fall through to load from assets
+            }
+        }
         try {
-            val inputs = resources.assets.open("romajimap.txt")
-            val reader = BufferedReader(InputStreamReader(inputs, decoder))
-            return reader.useLines { lines ->
-                lines.associate { line ->
-                    line.split("\t").let {
-                        it[0] to it[1]
+            resources.assets.open(FILENAME_ROMAJIMAP).use { inputs ->
+                val reader = BufferedReader(InputStreamReader(inputs))
+                return reader.useLines { lines ->
+                    lines.associate { line ->
+                        line.split("\t").let {
+                            it[0] to it[1]
+                        }
                     }
                 }
             }
         } catch (e: IOException) {
-            if (e is CharacterCodingException) {
-                Toast.makeText(
-                        this@SKKService, getString(R.string.error_text_dic_coding),
-                        Toast.LENGTH_LONG
-                ).show()
-            } else {
-                Toast.makeText(
-                        this@SKKService, getString(R.string.error_file_load, "romajimap.txt"),
-                        Toast.LENGTH_LONG
-                ).show()
-            }
+            Toast.makeText(
+                    this@SKKService, getString(R.string.error_file_load, FILENAME_ROMAJIMAP),
+                    Toast.LENGTH_LONG
+            ).show()
             stopSelf()
             return emptyMap<String, String>()
         }
@@ -428,6 +438,7 @@ class SKKService : InputMethodService() {
             }
             ACTION_READ_PREFS -> readPrefs()
             ACTION_RELOAD_DICS -> mEngine.reopenDictionaries(openDictionaries())
+            ACTION_RELOAD_ROMAJIMAP -> mEngine.reloadRomajiMap(loadRomajiMap())
         }
     }
 
@@ -762,5 +773,7 @@ class SKKService : InputMethodService() {
         internal const val ACTION_COMMIT_USERDIC = "jp.deadend.noname.skk.ACTION_COMMIT_USERDIC"
         internal const val ACTION_READ_PREFS = "jp.deadend.noname.skk.ACTION_READ_PREFS"
         internal const val ACTION_RELOAD_DICS = "jp.deadend.noname.skk.ACTION_RELOAD_DICS"
+        internal const val ACTION_RELOAD_ROMAJIMAP = "jp.deadend.noname.skk.ACTION_RELOAD_ROMAJIMAP"
+        internal const val FILENAME_ROMAJIMAP = "romajimap.txt"
     }
 }

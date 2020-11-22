@@ -14,7 +14,7 @@
 	<string name="label_backup_dic">SDカードに出力</string>
 	<string name="label_no_entry_found">エントリがありません</string>
 	<string name="label_dicmanager_activity">SKK 辞書管理</string>
-	<string name="label_dicmanager_ldic">SKK L辞書</string>
+	<string name="label_dicmanager_ldic">交ぜ書き変換辞書</string>
 	<string name="label_dicmanager_optionaldic">SKK 追加辞書</string>
 	<string name="label_dicmanager_add">辞書を追加</string>
 	<string name="label_dicmanager_input_name">辞書の名前を入力</string>
@@ -46,6 +46,7 @@
 	<string name="label_YES">はい</string>
 	<string name="label_NO">いいえ</string>
 
+	<string translatable="false" name="prefkey_import_romajimap">PrefKeyImportRomajiMap</string>
 	<string translatable="false" name="prefkey_kutouten_type">PrefKeyKutoutenType</string>
 	<string translatable="false" name="prefkey_kana_key">PrefKeyKanaKey</string>
 	<string translatable="false" name="prefkey_mod_kana_key">PrefKeyModKanaKey</string>

@@ -63,6 +63,10 @@ class SKKEngine(
         mDicts = dics
     }
 
+    fun reloadRomajiMap(newmap: Map<String, String>) {
+        mRomajiMap = newmap
+    }
+
     fun setZenkakuPunctuationMarks(type: String) {
         when (type) {
             "en" -> {
