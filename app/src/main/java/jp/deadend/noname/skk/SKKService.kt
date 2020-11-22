@@ -23,6 +23,12 @@ import android.view.WindowManager
 import android.widget.Toast
 
 import jp.deadend.noname.skk.engine.*
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
+import java.nio.charset.CharacterCodingException
+import java.nio.charset.Charset
+import java.nio.charset.CodingErrorAction
 
 class SKKService : InputMethodService() {
     private var mCandidateViewContainer: CandidateViewContainer? = null
@@ -122,12 +128,43 @@ class SKKService : InputMethodService() {
         return dic
     }
 
+    private fun loadRomajiMap(): Map<String, String> {
+        val decoder = Charset.forName("UTF-8").newDecoder()
+        decoder.onMalformedInput(CodingErrorAction.REPORT)
+        decoder.onUnmappableCharacter(CodingErrorAction.REPORT)
+        try {
+            val inputs = resources.assets.open("romajimap.txt")
+            val reader = BufferedReader(InputStreamReader(inputs, decoder))
+            return reader.useLines { lines ->
+                lines.associate { line ->
+                    line.split("\t").let {
+                        it[0] to it[1]
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            if (e is CharacterCodingException) {
+                Toast.makeText(
+                        this@SKKService, getString(R.string.error_text_dic_coding),
+                        Toast.LENGTH_LONG
+                ).show()
+            } else {
+                Toast.makeText(
+                        this@SKKService, getString(R.string.error_file_load, "romajimap.txt"),
+                        Toast.LENGTH_LONG
+                ).show()
+            }
+            stopSelf()
+            return emptyMap<String, String>()
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
 
         Thread.setDefaultUncaughtExceptionHandler(MyUncaughtExceptionHandler(applicationContext))
 
-        mEngine = SKKEngine(this@SKKService, openDictionaries(), openUserDictionary())
+        mEngine = SKKEngine(this@SKKService, openDictionaries(), openUserDictionary(), loadRomajiMap())
 
         val filter = IntentFilter(SKKMushroom.ACTION_BROADCAST)
         filter.addCategory(SKKMushroom.CATEGORY_BROADCAST)

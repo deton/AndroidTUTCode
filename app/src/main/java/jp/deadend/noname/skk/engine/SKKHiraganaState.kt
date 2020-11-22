@@ -24,7 +24,7 @@ object SKKHiraganaState : SKKState {
     ) {
         val composing = context.mComposing
         composing.append(pcode.toChar())
-        val hchr = RomajiConverter.convert(composing.toString())
+        val hchr = context.romaji2kana(composing.toString())
         when (hchr) {
             null -> {
                 if (isAlphabet(pcode) || pcode == ';'.toInt() || pcode == ','.toInt() || pcode == '.'.toInt() || pcode == '/'.toInt()) {

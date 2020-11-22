@@ -13,7 +13,8 @@ import jp.deadend.noname.skk.SKKUserDictionary
 class SKKEngine(
         private val mService: SKKService,
         private var mDicts: List<SKKDictionary>,
-        private val mUserDict: SKKUserDictionary
+        private val mUserDict: SKKUserDictionary,
+        private var mRomajiMap: Map<String, String>
 ) {
     var state: SKKState = SKKHiraganaState
         private set
@@ -300,6 +301,8 @@ class SKKEngine(
 
         return str
     }
+
+    fun romaji2kana(romaji: String) = mRomajiMap[romaji]
 
     // 小文字大文字変換，濁音，半濁音に使う
     fun changeLastChar(type: String) {

@@ -21,7 +21,7 @@ object SKKKanjiState : SKKState {
         } else {
             // 未確定
             composing.append(pcode.toChar())
-            val hchr = RomajiConverter.convert(composing.toString())
+            val hchr = context.romaji2kana(composing.toString())
             if (hchr != null) {
                 if (hchr[0] != '@') { // 機能でなく普通のかな漢字の場合
                     composing.setLength(0)

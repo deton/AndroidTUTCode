@@ -34,7 +34,7 @@ object SKKNarrowingState : SKKState {
                     }
                 }
                 composing.append(pcodeLower.toChar())
-                val hchr = RomajiConverter.convert(composing.toString())
+                val hchr = context.romaji2kana(composing.toString())
 
                 if (hchr != null) {
                     mHint.append(hchr)
