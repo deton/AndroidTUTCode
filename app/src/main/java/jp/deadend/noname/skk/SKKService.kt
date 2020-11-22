@@ -313,7 +313,7 @@ class SKKService : InputMethodService() {
             InputType.TYPE_CLASS_NUMBER,
             InputType.TYPE_CLASS_DATETIME,
             InputType.TYPE_CLASS_PHONE -> {
-                if (mEngine.state !== SKKASCIIState) mEngine.processKey('l'.toInt())
+                if (mEngine.state !== SKKASCIIState) mEngine.changeState(SKKASCIIState)
             }
             InputType.TYPE_CLASS_TEXT -> {
                 val variation = attribute.inputType and InputType.TYPE_MASK_VARIATION
@@ -324,7 +324,7 @@ class SKKService : InputMethodService() {
                         || variation == InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
                         || variation == InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD
                 ) {
-                    if (mEngine.state !== SKKASCIIState) mEngine.processKey('l'.toInt())
+                    if (mEngine.state !== SKKASCIIState) mEngine.changeState(SKKASCIIState)
                 }
             }
         }
