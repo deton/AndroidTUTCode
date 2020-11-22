@@ -2,7 +2,6 @@ package jp.deadend.noname.skk.engine
 
 import android.os.Build
 import jp.deadend.noname.skk.R
-import jp.deadend.noname.skk.isAlphabet
 
 // ひらがなモード
 object SKKHiraganaState : SKKState {
@@ -27,14 +26,11 @@ object SKKHiraganaState : SKKState {
         val hchr = context.romaji2kana(composing.toString())
         when (hchr) {
             null -> {
-                if (isAlphabet(pcode) || pcode == ';'.toInt() || pcode == ','.toInt() || pcode == '.'.toInt() || pcode == '/'.toInt()) {
-                    // ローマ字内の文字ならComposingに積む
-                    // TODO: pcode is in Romaji
-                    context.setComposingTextSKK(composing, 1)
-                } else {
-                    context.commitTextSKK(composing, 1)
-                    composing.setLength(0)
-                }
+                context.commitTextSKK(composing, 1)
+                composing.setLength(0)
+            }
+            "@cont" -> { // ローマ字内の文字ならComposingに積む
+                context.setComposingTextSKK(composing, 1)
             }
             "@maze" -> { // 漢字変換候補入力の開始。KanjiModeへの移行
                 composing.setLength(0)

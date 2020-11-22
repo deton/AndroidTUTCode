@@ -27,9 +27,6 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
-import java.nio.charset.CharacterCodingException
-import java.nio.charset.Charset
-import java.nio.charset.CodingErrorAction
 
 class SKKService : InputMethodService() {
     private var mCandidateViewContainer: CandidateViewContainer? = null
@@ -130,34 +127,38 @@ class SKKService : InputMethodService() {
     }
 
     private fun loadRomajiMap(): Map<String, String> {
+        val romajimap = mutableMapOf<String, String>()
+        fun line2romajimap(line: String) {
+            line.split("\t").let { (romaji, kana, _) ->
+                romajimap[romaji] = kana
+                // ローマ字途中かどうかを入れておく。途中でなくなった時にすぐに確定するため
+                for (i in 1 until romaji.length) {
+                    val prefix = romaji.take(i)
+                    if (!romajimap.contains(prefix)) {
+                        romajimap[prefix] = "@cont"
+                    }
+                }
+            }
+        }
         val importedFile = File(filesDir, FILENAME_ROMAJIMAP)
         if (importedFile.exists()) {
             try {
-                return importedFile.useLines { lines ->
-                    lines.associate { line ->
-                        line.split("\t").let {
-                            it[0] to it[1]
-                        }
-                    }
-                }
+                importedFile.forEachLine(action=::line2romajimap)
+                return romajimap.toMap()
             } catch (e: IOException) {
                 Toast.makeText(
                         this@SKKService, getString(R.string.error_file_load, importedFile.path),
                         Toast.LENGTH_LONG
                 ).show()
                 // fall through to load from assets
+                romajimap.clear()
             }
         }
         try {
             resources.assets.open(FILENAME_ROMAJIMAP).use { inputs ->
                 val reader = BufferedReader(InputStreamReader(inputs))
-                return reader.useLines { lines ->
-                    lines.associate { line ->
-                        line.split("\t").let {
-                            it[0] to it[1]
-                        }
-                    }
-                }
+                reader.forEachLine(action=::line2romajimap)
+                return romajimap.toMap()
             }
         } catch (e: IOException) {
             Toast.makeText(
