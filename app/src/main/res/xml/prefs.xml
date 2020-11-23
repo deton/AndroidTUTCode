@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:seekbar="http://schemas.android.com/apk/res/jp.deadend.noname.skk"
+	xmlns:seekbar="http://schemas.android.com/apk/res-auto"
 	android:title="@string/label_pref_activity">
 	<Preference
 		android:key="@string/prefkey_import_romajimap"
@@ -26,13 +26,13 @@
 	<Preference
 		android:title="@string/label_dicmanager_activity" >
 		<intent android:action="android.intent.action.MAIN"
-				android:targetPackage="jp.deadend.noname.skk"
+				android:targetPackage="io.github.deton.androidtutcode"
 				android:targetClass="jp.deadend.noname.skk.SKKDicManager" />
 	</Preference>
 	<Preference
 		android:title="@string/label_dictool_activity" >
 		<intent android:action="android.intent.action.MAIN"
-			android:targetPackage="jp.deadend.noname.skk"
+			android:targetPackage="io.github.deton.androidtutcode"
 			android:targetClass="jp.deadend.noname.skk.SKKUserDicTool" />
 	</Preference>
 	<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
@@ -150,7 +150,7 @@
 		android:title="辞書ファイル解凍"
 		android:summary="最初に一回実行してください" >
 		<intent android:action="android.intent.action.MAIN"
-			android:targetPackage="jp.deadend.noname.skk"
+			android:targetPackage="io.github.deton.androidtutcode"
 			android:targetClass="jp.deadend.noname.skk.SKKDicExtractActivity" />
 	</Preference>
 </PreferenceScreen>

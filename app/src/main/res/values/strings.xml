@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="ime_name">SKK for Android</string>
+	<string name="ime_name">AndroidTUTCode</string>
 	<string name="label_mushroom">マッシュルーム</string>
 	<string name="label_speech_recognition_results">認識結果</string>
 	<string name="label_extdic_activity">辞書ファイル解凍</string>
-	<string name="label_pref_activity">SKK for Androidの設定</string>
+	<string name="label_pref_activity">AndroidTUTCodeの設定</string>
 	<string name="label_pref_softkeyboard">ソフトウェアキーボードの設定...</string>
 	<string name="label_pref_hardkeyboard">ハードウェアキーボードの設定...</string>
-	<string name="label_dictool_activity">SKK ユーザー辞書ツール</string>
+	<string name="label_dictool_activity">ユーザー辞書ツール</string>
 	<string name="label_import">インポート</string>
 	<string name="label_export">エクスポート</string>
 	<string name="label_clear_userdic">ユーザー辞書初期化</string>
 	<string name="label_backup_dic">SDカードに出力</string>
 	<string name="label_no_entry_found">エントリがありません</string>
-	<string name="label_dicmanager_activity">SKK 辞書管理</string>
+	<string name="label_dicmanager_activity">辞書管理</string>
 	<string name="label_dicmanager_ldic">交ぜ書き変換辞書</string>
-	<string name="label_dicmanager_optionaldic">SKK 追加辞書</string>
+	<string name="label_dicmanager_optionaldic">追加辞書</string>
 	<string name="label_dicmanager_add">辞書を追加</string>
 	<string name="label_dicmanager_input_name">辞書の名前を入力</string>
 

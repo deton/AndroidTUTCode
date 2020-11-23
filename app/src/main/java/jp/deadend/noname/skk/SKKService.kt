@@ -771,10 +771,10 @@ class SKKService : InputMethodService() {
     }
 
     companion object {
-        internal const val ACTION_COMMIT_USERDIC = "jp.deadend.noname.skk.ACTION_COMMIT_USERDIC"
-        internal const val ACTION_READ_PREFS = "jp.deadend.noname.skk.ACTION_READ_PREFS"
-        internal const val ACTION_RELOAD_DICS = "jp.deadend.noname.skk.ACTION_RELOAD_DICS"
-        internal const val ACTION_RELOAD_ROMAJIMAP = "jp.deadend.noname.skk.ACTION_RELOAD_ROMAJIMAP"
+        internal const val ACTION_COMMIT_USERDIC = "io.github.deton.androidtutcode.ACTION_COMMIT_USERDIC"
+        internal const val ACTION_READ_PREFS = "io.github.deton.androidtutcode.ACTION_READ_PREFS"
+        internal const val ACTION_RELOAD_DICS = "io.github.deton.androidtutcode.ACTION_RELOAD_DICS"
+        internal const val ACTION_RELOAD_ROMAJIMAP = "io.github.deton.androidtutcode.ACTION_RELOAD_ROMAJIMAP"
         internal const val FILENAME_ROMAJIMAP = "romajimap.txt"
     }
 }

@@ -28,8 +28,8 @@ class SKKSpeechRecognitionResultsList : ListActivity() {
     }
 
     companion object {
-        const val ACTION_BROADCAST = "jp.deadend.noname.skk.MUSHROOM_RESULT"
-        const val CATEGORY_BROADCAST = "jp.deadend.noname.skk.MUSHROOM_VALUE"
+        const val ACTION_BROADCAST = "io.github.deton.androidtutcode.MUSHROOM_RESULT"
+        const val CATEGORY_BROADCAST = "io.github.deton.androidtutcode.MUSHROOM_VALUE"
 
         const val RESULTS_KEY = "speech_recognition_results_key"
     }
