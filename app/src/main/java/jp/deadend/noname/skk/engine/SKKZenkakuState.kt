@@ -17,6 +17,10 @@ object SKKZenkakuState : SKKState {
         context.changeState(SKKHiraganaState)
     }
 
+    override fun handleEisuKey(context: SKKEngine) {
+        context.changeState(SKKASCIIState)
+    }
+
     override fun processKey(context: SKKEngine, pcode: Int) {
         context.commitTextSKK(hankaku2zenkaku(pcode).toChar().toString(), 1)
     }

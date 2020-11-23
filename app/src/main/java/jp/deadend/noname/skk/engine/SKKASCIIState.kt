@@ -6,6 +6,7 @@ object SKKASCIIState : SKKState {
     override val icon = 0
 
     override fun handleKanaKey(context: SKKEngine) = context.changeState(SKKHiraganaState)
+    override fun handleEisuKey(context: SKKEngine) {}
 
     override fun processKey(context: SKKEngine, pcode: Int) {
         context.commitTextSKK(pcode.toChar().toString(), 1)

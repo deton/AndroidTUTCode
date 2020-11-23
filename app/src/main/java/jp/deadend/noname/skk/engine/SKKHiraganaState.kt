@@ -16,6 +16,8 @@ object SKKHiraganaState : SKKState {
         if (context.toggleKanaKey) context.changeState(SKKASCIIState)
     }
 
+    override fun handleEisuKey(context: SKKEngine) = context.changeState(SKKASCIIState)
+
     internal fun processKana(
             context: SKKEngine,
             pcode: Int, commitFunc:

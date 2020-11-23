@@ -503,6 +503,10 @@ class SKKService : InputMethodService() {
             mEngine.handleKanaKey()
             return true
         }
+        if (encodedKey == SKKPrefs.getEisuKey(context)) {
+            mEngine.handleEisuKey()
+            return true
+        }
 
         if (engineState === SKKASCIIState && !mEngine.isRegistering) {
             return super.onKeyDown(keyCode, event)

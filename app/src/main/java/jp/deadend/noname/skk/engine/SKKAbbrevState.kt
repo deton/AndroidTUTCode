@@ -17,6 +17,10 @@ object SKKAbbrevState : SKKState {
         context.changeState(SKKHiraganaState)
     }
 
+    override fun handleEisuKey(context: SKKEngine) {
+        context.changeState(SKKASCIIState)
+    }
+
     override fun processKey(context: SKKEngine, pcode: Int) {
         val kanjiKey = context.mKanjiKey
 

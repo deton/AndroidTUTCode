@@ -123,6 +123,11 @@ class SKKPrefs : PreferenceActivity() {
                 .getInt(context.getString(R.string.prefkey_kana_key), 612)
         // 612はCtrl+j
 
+        fun getEisuKey(context: Context) = getPrefs(context)
+                .getInt(context.getString(R.string.prefkey_eisu_key), 900)
+        // 900はCtrl+. (KEYCODE_PERIOD shl 4 or 4)
+        // XXX: 未設定時、デフォルトの Ctrl+. を食ってしまってアプリで使えない?
+
         fun getCancelKey(context: Context) = getPrefs(context)
                 .getInt(context.getString(R.string.prefkey_cancel_key), 564)
         // 564はCtrl+g

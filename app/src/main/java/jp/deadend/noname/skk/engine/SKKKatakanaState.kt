@@ -17,6 +17,10 @@ object SKKKatakanaState : SKKState {
         context.changeState(SKKHiraganaState)
     }
 
+    override fun handleEisuKey(context: SKKEngine) {
+        context.changeState(SKKASCIIState)
+    }
+
     override fun processKey(context: SKKEngine, pcode: Int) {
         if (context.changeInputMode(pcode, false)) return
         SKKHiraganaState.processKana(context, pcode) { engine, hchr ->

@@ -51,6 +51,7 @@
 	<string translatable="false" name="prefkey_kana_key">PrefKeyKanaKey</string>
 	<string translatable="false" name="prefkey_mod_kana_key">PrefKeyModKanaKey</string>
 	<string translatable="false" name="prefkey_toggle_kana_key">PrefKeyToggleKanaKey</string>
+	<string translatable="false" name="prefkey_eisu_key">PrefKeyEisuKey</string>
 	<string translatable="false" name="prefkey_cancel_key">PrefKeyCancelKey</string>
 	<string translatable="false" name="prefkey_mod_cancel_key">PrefKeyModCancelKey</string>
 	<string translatable="false" name="prefkey_candidates_size">PrefKeyCandidatesSize</string>

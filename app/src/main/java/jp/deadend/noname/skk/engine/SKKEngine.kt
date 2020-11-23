@@ -100,6 +100,10 @@ class SKKEngine(
         state.handleKanaKey(this)
     }
 
+    fun handleEisuKey() {
+        state.handleEisuKey(this)
+    }
+
     fun handleBackKey(): Boolean {
         if (!mRegistrationStack.isEmpty()) {
             mRegistrationStack.removeFirst()

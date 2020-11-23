@@ -50,6 +50,13 @@
 			android:summary="オンだと，かなモードでかなキーを押すとASCIIモードに戻ります"
 			android:defaultValue="true" />
 		<jp.deadend.noname.skk.SetKeyPreference
+			android:key="@string/prefkey_eisu_key"
+			android:title="英数キー"
+			android:summary="ASCIIモードに移行するキー"
+			android:dialogTitle="Press a key ..."
+			android:negativeButtonText="キャンセル"
+			android:positiveButtonText="OK" />
+		<jp.deadend.noname.skk.SetKeyPreference
 			android:key="@string/prefkey_cancel_key"
 			android:title="キャンセルキー"
 			android:dialogTitle="Press a key ..."

@@ -13,6 +13,10 @@ object SKKNarrowingState : SKKState {
         SKKChooseState.handleKanaKey(context)
     }
 
+    override fun handleEisuKey(context: SKKEngine) {
+        SKKChooseState.handleEisuKey(context)
+    }
+
     override fun processKey(context: SKKEngine, pcode: Int) {
         when {
             pcode == ' '.toInt() -> context.chooseAdjacentCandidate(true)

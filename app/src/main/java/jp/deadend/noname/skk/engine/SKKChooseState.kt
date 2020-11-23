@@ -16,6 +16,11 @@ object SKKChooseState : SKKState {
         }
     }
 
+    override fun handleEisuKey(context: SKKEngine) {
+        context.pickCurrentCandidate()
+        context.changeState(SKKASCIIState)
+    }
+
     override fun processKey(context: SKKEngine, pcode: Int) {
         when (pcode) {
             ' '.toInt() -> context.chooseAdjacentCandidate(true)

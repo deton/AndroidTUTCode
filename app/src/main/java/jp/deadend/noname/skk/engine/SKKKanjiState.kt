@@ -11,6 +11,10 @@ object SKKKanjiState : SKKState {
 
     override fun handleKanaKey(context: SKKEngine) {}
 
+    override fun handleEisuKey(context: SKKEngine) {
+        context.changeState(SKKASCIIState)
+    }
+
     override fun processKey(context: SKKEngine, pcode: Int) {
         val kanjiKey = context.mKanjiKey
         val composing = context.mComposing
