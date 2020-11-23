@@ -12,27 +12,35 @@ object SKKKanjiState : SKKState {
     override fun handleKanaKey(context: SKKEngine) {}
 
     override fun processKey(context: SKKEngine, pcode: Int) {
-        val composing = context.mComposing
         val kanjiKey = context.mKanjiKey
-        if (pcode == ' '.toInt()) {
-            // 変換開始
-            composing.setLength(0)
-            context.conversionStart(kanjiKey)
-        } else {
-            // 未確定
-            composing.append(pcode.toChar())
-            val hchr = context.romaji2kana(composing.toString())
-            if (hchr != null) {
-                if (hchr[0] != '@') { // 機能でなく普通のかな漢字の場合
+        val composing = context.mComposing
+        composing.append(pcode.toChar())
+        val hchr = context.romaji2kana(composing.toString())
+        when (hchr) {
+            null -> { // ローマ字シーケンス外の文字
+                if (pcode == ' '.toInt()) { // 変換開始
                     composing.setLength(0)
-                    kanjiKey.append(hchr)
-                    context.setComposingTextSKK(kanjiKey, 1)
+                    context.conversionStart(kanjiKey)
+                } else {
+                    context.setComposingTextSKK(kanjiKey.toString() + composing.toString(), 1)
                 }
-            } else {
+            }
+            "@cont" -> { // ローマ字内の文字
                 context.setComposingTextSKK(kanjiKey.toString() + composing.toString(), 1)
             }
-            context.updateSuggestions(kanjiKey.toString())
+            "@tglkata" -> { // カタカナひらがなモードトグル
+                composing.setLength(0) // 現状は無視する
+            }
+            "@maze" -> { // 再帰的な前置型交ぜ書き変換は未対応
+                composing.setLength(0) // 無視する
+            }
+            else -> { // ローマ字シーケンスに対応するかな/漢字があった→hchr
+                composing.setLength(0)
+                kanjiKey.append(hchr)
+                context.setComposingTextSKK(kanjiKey, 1)
+            }
         }
+        context.updateSuggestions(kanjiKey.toString())
     }
 
     override fun afterBackspace(context: SKKEngine) {

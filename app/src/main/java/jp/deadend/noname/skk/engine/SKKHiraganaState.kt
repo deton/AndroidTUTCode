@@ -25,7 +25,7 @@ object SKKHiraganaState : SKKState {
         composing.append(pcode.toChar())
         val hchr = context.romaji2kana(composing.toString())
         when (hchr) {
-            null -> {
+            null -> { // ローマ字シーケンス外の文字が来た場合はそのまま確定
                 context.commitTextSKK(composing, 1)
                 composing.setLength(0)
             }
