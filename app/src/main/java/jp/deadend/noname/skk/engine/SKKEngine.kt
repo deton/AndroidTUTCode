@@ -1,14 +1,7 @@
 package jp.deadend.noname.skk.engine
 
+import jp.deadend.noname.skk.*
 import java.util.ArrayDeque
-import jp.deadend.noname.skk.dlog
-import jp.deadend.noname.skk.isAlphabet
-import jp.deadend.noname.skk.processConcatAndEscape
-import jp.deadend.noname.skk.removeAnnotation
-import jp.deadend.noname.skk.SKKDictionary
-import jp.deadend.noname.skk.SKKPrefs
-import jp.deadend.noname.skk.SKKService
-import jp.deadend.noname.skk.SKKUserDictionary
 
 class SKKEngine(
         private val mService: SKKService,
@@ -311,6 +304,39 @@ class SKKEngine(
     }
 
     fun romaji2kana(romaji: String) = mRomajiMap[romaji]
+
+    /**
+     * 後置型カタカナ置換。
+     * カーソル直前のカタカナを長さ[nchars]文字ぶん伸ばす。
+     * @param nchars カタカナを伸ばす文字数
+     */
+    fun changeLastCharsToKatakana(nchars: Int) {
+        //TODO: カタカナを伸ばすため、カタカナが続く間スキップする
+        when {
+            state === SKKKanjiState && mComposing.isEmpty() -> {
+                val cs = mKanjiKey.takeLast(nchars)
+                val kata = hirakana2katakana(cs.toString())
+                mKanjiKey.setLength(mKanjiKey.length - cs.length)
+                mKanjiKey.append(kata)
+                setComposingTextSKK(mKanjiKey, 1)
+                updateSuggestions(mKanjiKey.toString())
+            }
+            mComposing.isEmpty() && mKanjiKey.isEmpty() -> {
+                val ic = mService.currentInputConnection ?: return
+                val cs = ic.getTextBeforeCursor(nchars, 0) ?: return
+                val kata = hirakana2katakana(cs.toString())
+                if (!mRegistrationStack.isEmpty()) {
+                    val regEntry = mRegistrationStack.peekFirst().entry
+                    regEntry.setLength(regEntry.length - cs.length)
+                    regEntry.append(kata)
+                    setComposingTextSKK("", 1)
+                } else {
+                    ic.deleteSurroundingText(cs.length, 0)
+                    ic.commitText(kata, 1)
+                }
+            }
+        }
+    }
 
     // 小文字大文字変換，濁音，半濁音に使う
     fun changeLastChar(type: String) {

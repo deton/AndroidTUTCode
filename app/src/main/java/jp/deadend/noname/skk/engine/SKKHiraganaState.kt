@@ -47,6 +47,51 @@ object SKKHiraganaState : SKKState {
                 context.changeState(SKKKanjiState)
                 context.setComposingTextSKK("", 1);
             }
+            "@kata1" -> { // 後置型カタカナ置換。カタカナを1文字伸ばす
+                composing.setLength(0)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(1)
+            }
+            "@kata2" -> { // 後置型カタカナ置換。カタカナを2文字伸ばす
+                composing.setLength(0)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(2)
+            }
+            "@kata3" -> { // 後置型カタカナ置換。カタカナを3文字伸ばす
+                composing.setLength(0)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(3)
+            }
+            "@kata4" -> { // 後置型カタカナ置換。カタカナを4文字伸ばす
+                composing.setLength(0)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(4)
+            }
+            "@kata5" -> { // 後置型カタカナ置換。カタカナを5文字伸ばす
+                composing.setLength(0)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(5)
+            }
+            "@kata6" -> { // 後置型カタカナ置換。カタカナを6文字伸ばす
+                composing.setLength(0)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(6)
+            }
+            "@kata7" -> { // 後置型カタカナ置換。カタカナを7文字伸ばす
+                composing.setLength(0)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(7)
+            }
+            "@kata8" -> { // 後置型カタカナ置換。カタカナを8文字伸ばす
+                composing.setLength(0)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(8)
+            }
+            "@kata9" -> { // 後置型カタカナ置換。カタカナを9文字伸ばす
+                composing.setLength(0)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(9)
+            }
             else -> commitFunc(context, hchr) // 確定できるものがあれば確定
         }
     }

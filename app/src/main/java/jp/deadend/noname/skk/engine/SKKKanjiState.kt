@@ -38,6 +38,42 @@ object SKKKanjiState : SKKState {
             "@maze" -> { // 再帰的な前置型交ぜ書き変換は未対応
                 composing.setLength(0) // 無視する
             }
+            "@kata1" -> { // 後置型カタカナ置換。カタカナを1文字伸ばす
+                composing.setLength(0)
+                context.changeLastCharsToKatakana(1)
+            }
+            "@kata2" -> { // 後置型カタカナ置換。カタカナを2文字伸ばす
+                composing.setLength(0)
+                context.changeLastCharsToKatakana(2)
+            }
+            "@kata3" -> { // 後置型カタカナ置換。カタカナを3文字伸ばす
+                composing.setLength(0)
+                context.changeLastCharsToKatakana(3)
+            }
+            "@kata4" -> { // 後置型カタカナ置換。カタカナを4文字伸ばす
+                composing.setLength(0)
+                context.changeLastCharsToKatakana(4)
+            }
+            "@kata5" -> { // 後置型カタカナ置換。カタカナを5文字伸ばす
+                composing.setLength(0)
+                context.changeLastCharsToKatakana(5)
+            }
+            "@kata6" -> { // 後置型カタカナ置換。カタカナを6文字伸ばす
+                composing.setLength(0)
+                context.changeLastCharsToKatakana(6)
+            }
+            "@kata7" -> { // 後置型カタカナ置換。カタカナを7文字伸ばす
+                composing.setLength(0)
+                context.changeLastCharsToKatakana(7)
+            }
+            "@kata8" -> { // 後置型カタカナ置換。カタカナを8文字伸ばす
+                composing.setLength(0)
+                context.changeLastCharsToKatakana(8)
+            }
+            "@kata9" -> { // 後置型カタカナ置換。カタカナを9文字伸ばす
+                composing.setLength(0)
+                context.changeLastCharsToKatakana(9)
+            }
             else -> { // ローマ字シーケンスに対応するかな/漢字があった→hchr
                 composing.setLength(0)
                 kanjiKey.append(hchr)
