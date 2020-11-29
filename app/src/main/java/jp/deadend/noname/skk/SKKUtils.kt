@@ -11,10 +11,14 @@ fun hankaku2zenkaku(pcode: Int) = if (pcode == 0x20) 0x3000 else pcode - 0x20 + 
 fun hirakana2katakana(str: String?): String? {
     if (str == null) { return null }
 
-    val str2 = str.map { if (it in 'ぁ'..'ん') it.plus(0x60) else it }.joinToString("")
+    val str2 = str.map { if (isHirakana(it)) it.plus(0x60) else it }.joinToString("")
     val idx = str2.indexOf("ウ゛")
     return if (idx == -1) str2 else str2.replaceRange(idx, idx+2, "ヴ")
 }
+
+fun isHirakana(ch: Char) = ch in 'ぁ'..'ゖ'
+
+fun isKatakana(ch: Char) = ch in 'ァ'..'ヺ'
 
 fun isAlphabet(code: Int) = (code in 0x41..0x5A || code in 0x61..0x7A)
 

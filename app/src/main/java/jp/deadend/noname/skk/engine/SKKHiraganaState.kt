@@ -48,49 +48,68 @@ object SKKHiraganaState : SKKState {
                 context.setComposingTextSKK("", 1);
             }
             "@kata1" -> { // 後置型カタカナ置換。カタカナを1文字伸ばす
-                composing.setLength(0)
                 context.setComposingTextSKK("", 1);
                 context.changeLastCharsToKatakana(1)
             }
             "@kata2" -> { // 後置型カタカナ置換。カタカナを2文字伸ばす
-                composing.setLength(0)
                 context.setComposingTextSKK("", 1);
                 context.changeLastCharsToKatakana(2)
             }
             "@kata3" -> { // 後置型カタカナ置換。カタカナを3文字伸ばす
-                composing.setLength(0)
                 context.setComposingTextSKK("", 1);
                 context.changeLastCharsToKatakana(3)
             }
             "@kata4" -> { // 後置型カタカナ置換。カタカナを4文字伸ばす
-                composing.setLength(0)
                 context.setComposingTextSKK("", 1);
                 context.changeLastCharsToKatakana(4)
             }
             "@kata5" -> { // 後置型カタカナ置換。カタカナを5文字伸ばす
-                composing.setLength(0)
                 context.setComposingTextSKK("", 1);
                 context.changeLastCharsToKatakana(5)
             }
             "@kata6" -> { // 後置型カタカナ置換。カタカナを6文字伸ばす
-                composing.setLength(0)
                 context.setComposingTextSKK("", 1);
                 context.changeLastCharsToKatakana(6)
             }
             "@kata7" -> { // 後置型カタカナ置換。カタカナを7文字伸ばす
-                composing.setLength(0)
                 context.setComposingTextSKK("", 1);
                 context.changeLastCharsToKatakana(7)
             }
             "@kata8" -> { // 後置型カタカナ置換。カタカナを8文字伸ばす
-                composing.setLength(0)
                 context.setComposingTextSKK("", 1);
                 context.changeLastCharsToKatakana(8)
             }
             "@kata9" -> { // 後置型カタカナ置換。カタカナを9文字伸ばす
-                composing.setLength(0)
                 context.setComposingTextSKK("", 1);
                 context.changeLastCharsToKatakana(9)
+            }
+            "@kata0" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(0)
+            }
+            "@kata-1" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(1文字残す)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(-1)
+            }
+            "@kata-2" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(2文字残す)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(-2)
+            }
+            "@kata-3" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(3文字残す)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(-3)
+            }
+            "@kata-4" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(4文字残す)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(-4)
+            }
+            "@kata-5" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(5文字残す)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(-5)
+            }
+            "@kata-6" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(6文字残す)
+                context.setComposingTextSKK("", 1);
+                context.changeLastCharsToKatakana(-6)
             }
             else -> commitFunc(context, hchr) // 確定できるものがあれば確定
         }

@@ -311,31 +311,72 @@ class SKKEngine(
      * @param nchars カタカナを伸ばす文字数
      */
     fun changeLastCharsToKatakana(nchars: Int) {
-        //TODO: カタカナを伸ばすため、カタカナが続く間スキップする
+        fun tokatakana(cs: CharSequence, commitFunc: (dellen: Int, katakana: String) -> Unit) {
+            /**
+             * 文字列末尾にある連続するpredicateの最初の位置を返す
+             */
+            fun backwardWhile(cs: CharSequence, ed: Int, predicate: (Char) -> Boolean): Int {
+                var i = ed - 1
+                while (i >= 0 && (predicate(cs[i]) || cs[i] == 'ー')) {
+                    i--
+                }
+                i++
+                // 先頭の(連続する)「ー」は外す
+                while (i < ed && cs[i] == 'ー') {
+                    i++
+                }
+                return i
+            }
+
+            // カタカナを伸ばすため、カタカナが続く間スキップする
+            val ed = backwardWhile(cs, cs.length, ::isKatakana)
+            var st = ed
+            if (nchars > 0) {
+                st = ed - nchars
+                if (st < 0) {
+                    st = 0
+                }
+            } else { // nchars==0: ひらがなが続く間、負: ひらがなとして残す文字数指定
+                st = backwardWhile(cs, ed, ::isHirakana)
+                if (nchars < 0) { // 指定文字数を除いてカタカナに変換
+                    st += -nchars
+                }
+            }
+            if (st >= ed) {
+                return
+            }
+            val katakana = hirakana2katakana(cs.substring(st)) ?: return
+            commitFunc(cs.length - st, katakana)
+        }
+
+        val GETLEN = 20
         mComposing.setLength(0)
         when {
             state === SKKKanjiState -> {
-                val cs = mKanjiKey.takeLast(nchars)
-                val kata = hirakana2katakana(cs.toString())
-                mKanjiKey.setLength(mKanjiKey.length - cs.length)
-                mKanjiKey.append(kata)
-                setComposingTextSKK(mKanjiKey, 1)
-                updateSuggestions(mKanjiKey.toString())
+                val cs = mKanjiKey.takeLast(GETLEN)
+                tokatakana(cs) { dellen, katakana ->
+                    mKanjiKey.setLength(mKanjiKey.length - dellen)
+                    mKanjiKey.append(katakana)
+                    setComposingTextSKK(mKanjiKey, 1)
+                    updateSuggestions(mKanjiKey.toString())
+                }
             }
             mKanjiKey.isEmpty() -> {
                 if (!mRegistrationStack.isEmpty()) {
                     val regEntry = mRegistrationStack.peekFirst().entry
-                    val cs = regEntry.takeLast(nchars)
-                    val kata = hirakana2katakana(cs.toString())
-                    regEntry.setLength(regEntry.length - cs.length)
-                    regEntry.append(kata)
-                    setComposingTextSKK("", 1)
+                    val cs = regEntry.takeLast(GETLEN)
+                    tokatakana(cs) { dellen, katakana ->
+                        regEntry.setLength(regEntry.length - dellen)
+                        regEntry.append(katakana)
+                        setComposingTextSKK("", 1)
+                    }
                 } else {
                     val ic = mService.currentInputConnection ?: return
-                    val cs = ic.getTextBeforeCursor(nchars, 0) ?: return
-                    val kata = hirakana2katakana(cs.toString())
-                    ic.deleteSurroundingText(cs.length, 0)
-                    ic.commitText(kata, 1)
+                    val cs = ic.getTextBeforeCursor(GETLEN, 0) ?: return
+                    tokatakana(cs) { dellen, katakana ->
+                        ic.deleteSurroundingText(dellen, 0)
+                        ic.commitText(katakana, 1)
+                    }
                 }
             }
         }
