@@ -312,8 +312,9 @@ class SKKEngine(
      */
     fun changeLastCharsToKatakana(nchars: Int) {
         //TODO: カタカナを伸ばすため、カタカナが続く間スキップする
+        mComposing.setLength(0)
         when {
-            state === SKKKanjiState && mComposing.isEmpty() -> {
+            state === SKKKanjiState -> {
                 val cs = mKanjiKey.takeLast(nchars)
                 val kata = hirakana2katakana(cs.toString())
                 mKanjiKey.setLength(mKanjiKey.length - cs.length)
@@ -321,16 +322,18 @@ class SKKEngine(
                 setComposingTextSKK(mKanjiKey, 1)
                 updateSuggestions(mKanjiKey.toString())
             }
-            mComposing.isEmpty() && mKanjiKey.isEmpty() -> {
-                val ic = mService.currentInputConnection ?: return
-                val cs = ic.getTextBeforeCursor(nchars, 0) ?: return
-                val kata = hirakana2katakana(cs.toString())
+            mKanjiKey.isEmpty() -> {
                 if (!mRegistrationStack.isEmpty()) {
                     val regEntry = mRegistrationStack.peekFirst().entry
+                    val cs = regEntry.takeLast(nchars)
+                    val kata = hirakana2katakana(cs.toString())
                     regEntry.setLength(regEntry.length - cs.length)
                     regEntry.append(kata)
                     setComposingTextSKK("", 1)
                 } else {
+                    val ic = mService.currentInputConnection ?: return
+                    val cs = ic.getTextBeforeCursor(nchars, 0) ?: return
+                    val kata = hirakana2katakana(cs.toString())
                     ic.deleteSurroundingText(cs.length, 0)
                     ic.commitText(kata, 1)
                 }
