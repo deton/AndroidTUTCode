@@ -16,7 +16,7 @@ j4	@kata-4
 j5	@kata-5
 j6	@kata-6
 q 	“
-w 	～
+w 	〒
 e 	ー
 E 	ー
 r 	【
@@ -28,14 +28,14 @@ o 	・
 O 	・
 p 	”
 a 	‘
-s 	―
+s 	☆
 d 	、
 f 	。
 g 	『
 h 	』
 j 	々
-k 	〈
-l 	〉
+k 	※
+l 	＼
 ; 	’
 z 	〆
 x 	§
