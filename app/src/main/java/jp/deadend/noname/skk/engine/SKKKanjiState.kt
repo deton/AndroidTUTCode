@@ -38,52 +38,55 @@ object SKKKanjiState : SKKState {
             "@maze" -> { // 再帰的な前置型交ぜ書き変換は未対応
                 composing.setLength(0) // 無視する
             }
-            "@kata1" -> { // 後置型カタカナ置換。カタカナを1文字伸ばす
+            "@Bushu" -> { // 後置型部首合成変換
+                context.changeLastCharsByBushuConv()
+            }
+            "@Kata1" -> { // 後置型カタカナ置換。カタカナを1文字伸ばす
                 context.changeLastCharsToKatakana(1)
             }
-            "@kata2" -> { // 後置型カタカナ置換。カタカナを2文字伸ばす
+            "@Kata2" -> { // 後置型カタカナ置換。カタカナを2文字伸ばす
                 context.changeLastCharsToKatakana(2)
             }
-            "@kata3" -> { // 後置型カタカナ置換。カタカナを3文字伸ばす
+            "@Kata3" -> { // 後置型カタカナ置換。カタカナを3文字伸ばす
                 context.changeLastCharsToKatakana(3)
             }
-            "@kata4" -> { // 後置型カタカナ置換。カタカナを4文字伸ばす
+            "@Kata4" -> { // 後置型カタカナ置換。カタカナを4文字伸ばす
                 context.changeLastCharsToKatakana(4)
             }
-            "@kata5" -> { // 後置型カタカナ置換。カタカナを5文字伸ばす
+            "@Kata5" -> { // 後置型カタカナ置換。カタカナを5文字伸ばす
                 context.changeLastCharsToKatakana(5)
             }
-            "@kata6" -> { // 後置型カタカナ置換。カタカナを6文字伸ばす
+            "@Kata6" -> { // 後置型カタカナ置換。カタカナを6文字伸ばす
                 context.changeLastCharsToKatakana(6)
             }
-            "@kata7" -> { // 後置型カタカナ置換。カタカナを7文字伸ばす
+            "@Kata7" -> { // 後置型カタカナ置換。カタカナを7文字伸ばす
                 context.changeLastCharsToKatakana(7)
             }
-            "@kata8" -> { // 後置型カタカナ置換。カタカナを8文字伸ばす
+            "@Kata8" -> { // 後置型カタカナ置換。カタカナを8文字伸ばす
                 context.changeLastCharsToKatakana(8)
             }
-            "@kata9" -> { // 後置型カタカナ置換。カタカナを9文字伸ばす
+            "@Kata9" -> { // 後置型カタカナ置換。カタカナを9文字伸ばす
                 context.changeLastCharsToKatakana(9)
             }
-            "@kata0" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな
+            "@Kata0" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな
                 context.changeLastCharsToKatakana(0)
             }
-            "@kata-1" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(1文字残す)
+            "@Kata-1" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(1文字残す)
                 context.changeLastCharsToKatakana(-1)
             }
-            "@kata-2" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(2文字残す)
+            "@Kata-2" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(2文字残す)
                 context.changeLastCharsToKatakana(-2)
             }
-            "@kata-3" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(3文字残す)
+            "@Kata-3" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(3文字残す)
                 context.changeLastCharsToKatakana(-3)
             }
-            "@kata-4" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(4文字残す)
+            "@Kata-4" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(4文字残す)
                 context.changeLastCharsToKatakana(-4)
             }
-            "@kata-5" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(5文字残す)
+            "@Kata-5" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(5文字残す)
                 context.changeLastCharsToKatakana(-5)
             }
-            "@kata-6" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(6文字残す)
+            "@Kata-6" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(6文字残す)
                 context.changeLastCharsToKatakana(-6)
             }
             else -> { // ローマ字シーケンスに対応するかな/漢字があった→hchr

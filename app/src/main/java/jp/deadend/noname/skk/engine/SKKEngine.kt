@@ -1,5 +1,6 @@
 package jp.deadend.noname.skk.engine
 
+import io.github.deton.androidtutcode.BushuConverter
 import jp.deadend.noname.skk.*
 import java.util.ArrayDeque
 
@@ -376,6 +377,48 @@ class SKKEngine(
                     tokatakana(cs) { dellen, katakana ->
                         ic.deleteSurroundingText(dellen, 0)
                         ic.commitText(katakana, 1)
+                    }
+                }
+            }
+        }
+    }
+
+    // 後置型部首合成変換
+    fun changeLastCharsByBushuConv() {
+        fun bushuconv(cs: CharSequence, commitFunc: (kanji: String) -> Unit) {
+            if (cs.length != 2) {
+                return
+            }
+            BushuConverter.convert(cs[0], cs[1])?.let {
+                commitFunc(it.toString())
+            }
+        }
+        mComposing.setLength(0)
+        when {
+            state === SKKKanjiState -> {
+                val cs = mKanjiKey.takeLast(2)
+                bushuconv(cs) { kanji ->
+                    mKanjiKey.setLength(mKanjiKey.length - 2)
+                    mKanjiKey.append(kanji)
+                    setComposingTextSKK(mKanjiKey, 1)
+                    updateSuggestions(mKanjiKey.toString())
+                }
+            }
+            mKanjiKey.isEmpty() -> {
+                if (!mRegistrationStack.isEmpty()) {
+                    val regEntry = mRegistrationStack.peekFirst().entry
+                    val cs = regEntry.takeLast(2)
+                    bushuconv(cs) { kanji ->
+                        regEntry.setLength(regEntry.length - 2)
+                        regEntry.append(kanji)
+                        setComposingTextSKK("", 1)
+                    }
+                } else {
+                    val ic = mService.currentInputConnection ?: return
+                    val cs = ic.getTextBeforeCursor(2, 0) ?: return
+                    bushuconv(cs) { kanji ->
+                        ic.deleteSurroundingText(2, 0)
+                        ic.commitText(kanji, 1)
                     }
                 }
             }
