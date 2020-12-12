@@ -1,4 +1,5 @@
 fj	@maze
+77	@Bushu
 ,1	借
 .1	須
 p1	象
