@@ -25,6 +25,7 @@ object SKKKanjiState : SKKState {
                 if (pcode == ' '.toInt()) { // 変換開始
                     composing.setLength(0)
                     context.conversionStart(kanjiKey)
+                    return
                 } else {
                     context.setComposingTextSKK(kanjiKey.toString() + composing.toString(), 1)
                 }
