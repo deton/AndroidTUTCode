@@ -759,7 +759,7 @@ class SKKEngine(
         mOkurigana = null
         mCandidatesList = null
         mService.clearCandidatesView()
-        mService.currentInputConnection.setComposingText("", 1)
+        mService.currentInputConnection?.setComposingText("", 1)
     }
 
     internal fun changeInputMode(pcode: Int, toKatakana: Boolean): Boolean {
