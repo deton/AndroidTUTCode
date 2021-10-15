@@ -7,6 +7,11 @@ AndroidTUTCode
 ハードウェアキーボードでの使用のみ想定しています。
 (ソフトウェアキーボードは動作未確認)
 
+## インストール
+
+https://github.com/deton/AndroidTUTCode/releases に apk ファイルがあります。
+そちらを用いてインストールを行ってください。
+
 ## 主な変更点
 
 * ローマ字かな変換表をTUT-Codeに変更。
