@@ -15,8 +15,8 @@ object SKKNarrowingState : SKKState {
 
     override fun processKey(context: SKKEngine, pcode: Int) {
         when {
-            pcode == ' '.toInt() -> context.chooseAdjacentCandidate(true)
-            pcode == 'x'.toInt() -> context.chooseAdjacentCandidate(false)
+            pcode == ' '.code -> context.chooseAdjacentCandidate(true)
+            pcode == 'x'.code -> context.chooseAdjacentCandidate(false)
             isAlphabet(pcode) -> {
                 val composing = context.mComposing
                 val pcodeLower = if (Character.isUpperCase(pcode)) {

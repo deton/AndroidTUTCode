@@ -6,27 +6,13 @@ import jdbm.RecordManager
 import jdbm.RecordManagerFactory
 import jdbm.btree.BTree
 
-class SKKDictionary(mDicFile: String, btreeName: String): SKKDictionaryInterface {
-    override val mRecMan: RecordManager
-    override val mRecID: Long
-    override val mBTree: BTree
-    override var isValid: Boolean = true
-
-    init {
-        try {
-            mRecMan = RecordManagerFactory.createRecordManager(mDicFile)
-            mRecID = mRecMan.getNamedObject(btreeName)
-            mBTree = BTree.load(mRecMan, mRecID)
-        } catch (e: Exception) {
-            Log.e("SKK", "Error in opening the dictionary: $e")
-            isValid = false
-            throw RuntimeException(e)
-        }
-    }
+class SKKDictionary private constructor (
+        override val mRecMan: RecordManager,
+        override val mRecID: Long,
+        override val mBTree: BTree
+): SKKDictionaryInterface {
 
     fun getCandidates(key: String): List<String>? {
-        if (!isValid) { return null }
-
         val value: String?
         try {
             value = mBTree.find(key) as? String
@@ -45,5 +31,21 @@ class SKKDictionary(mDicFile: String, btreeName: String): SKKDictionaryInterface
         }
 
         return valArray
+    }
+
+    companion object {
+        fun newInstance(mDicFile: String, btreeName: String): SKKDictionary? {
+            return try {
+                val recman = RecordManagerFactory.createRecordManager(mDicFile)
+                val recid = recman.getNamedObject(btreeName)
+                val btree = BTree.load(recman, recid)
+
+                SKKDictionary(recman, recid, btree)
+            } catch (e: Exception) {
+                Log.e("SKK", "Error in opening the dictionary: $e")
+
+                null
+            }
+        }
     }
 }

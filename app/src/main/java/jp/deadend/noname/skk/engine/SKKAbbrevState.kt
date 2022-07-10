@@ -22,10 +22,10 @@ object SKKAbbrevState : SKKState {
 
         // スペースで変換するかそのままComposingに積む
         when (pcode) {
-            ' '.toInt() -> if (kanjiKey.isNotEmpty()) context.conversionStart(kanjiKey)
+            ' '.code -> if (kanjiKey.isNotEmpty()) context.conversionStart(kanjiKey)
             -1010 -> {
                 // 全角変換
-                val buf = kanjiKey.map { hankaku2zenkaku(it.toInt()).toChar() }.joinToString("")
+                val buf = kanjiKey.map { hankaku2zenkaku(it.code).toChar() }.joinToString("")
                 context.commitTextSKK(buf, 1)
                 context.changeState(SKKHiraganaState)
             }

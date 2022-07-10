@@ -28,21 +28,21 @@ object SKKKanjiState : SKKState {
                 composing.setLength(0)
             }
         }
-        if (pcodeLower == 'q'.toInt()) {
+        if (pcodeLower == 'q'.code) {
             // カタカナ変換
             if (kanjiKey.isNotEmpty()) {
                 val str = hirakana2katakana(kanjiKey.toString())
                 if (str != null) context.commitTextSKK(str, 1)
             }
             context.changeState(SKKHiraganaState)
-        } else if (pcodeLower == ' '.toInt() || pcodeLower == '>'.toInt()) {
+        } else if (pcodeLower == ' '.code || pcodeLower == '>'.code) {
             // 変換開始
             // 最後に単体の'n'で終わっている場合、'ん'に変換
             if (composing.length == 1 && composing[0] == 'n') {
                 kanjiKey.append('ん')
                 context.setComposingTextSKK(kanjiKey, 1)
             }
-            if (pcodeLower == '>'.toInt()) kanjiKey.append('>') // 接頭辞入力
+            if (pcodeLower == '>'.code) kanjiKey.append('>') // 接頭辞入力
             composing.setLength(0)
             context.conversionStart(kanjiKey)
         } else if (isUpper && kanjiKey.isNotEmpty()) {

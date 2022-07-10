@@ -24,6 +24,7 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.res.ResourcesCompat
 
 /**
  * Construct a CandidateView for showing suggested words for completion.
@@ -39,7 +40,7 @@ class CandidateView(context: Context, attrs: AttributeSet) : View(context, attrs
     private var mChoosedIndex = 0
 
     private var mTouchX = OUT_OF_BOUNDS
-    private val mSelectionHighlight: Drawable
+    private val mSelectionHighlight: Drawable?
     private var mScrollPixels = 0
 
     private val mWordWidth = IntArray(MAX_SUGGESTIONS)
@@ -63,19 +64,19 @@ class CandidateView(context: Context, attrs: AttributeSet) : View(context, attrs
     init {
         val r = context.resources
 
-        mSelectionHighlight = r.getDrawable(R.drawable.ic_suggest_scroll_background)
-        mSelectionHighlight.state = intArrayOf(
+        mSelectionHighlight = ResourcesCompat.getDrawable(r, R.drawable.ic_suggest_scroll_background, null)
+        mSelectionHighlight?.state = intArrayOf(
                 android.R.attr.state_enabled,
                 android.R.attr.state_focused,
                 android.R.attr.state_window_focused,
                 android.R.attr.state_pressed
         )
 
-        setBackgroundColor(r.getColor(R.color.candidate_background))
+        setBackgroundColor(ResourcesCompat.getColor(r, R.color.candidate_background, null))
 
-        mColorNormal = r.getColor(R.color.candidate_normal)
-        mColorRecommended = r.getColor(R.color.candidate_recommended)
-        mColorOther = r.getColor(R.color.candidate_other)
+        mColorNormal = ResourcesCompat.getColor(r, R.color.candidate_normal, null)
+        mColorRecommended = ResourcesCompat.getColor(r, R.color.candidate_recommended, null)
+        mColorOther = ResourcesCompat.getColor(r, R.color.candidate_other, null)
 
         mScrollPixels = r.getDimensionPixelSize(R.dimen.candidates_scroll_size)
 
@@ -134,7 +135,7 @@ class CandidateView(context: Context, attrs: AttributeSet) : View(context, attrs
     public override fun computeHorizontalScrollRange() =  mTotalWidth
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val measuredWidth = View.resolveSize(50, widthMeasureSpec)
+        val measuredWidth = resolveSize(50, widthMeasureSpec)
         mScrollPixels = measuredWidth / 12
 
         // Get the desired height of the icon menu view (last row of items does
@@ -149,7 +150,7 @@ class CandidateView(context: Context, attrs: AttributeSet) : View(context, attrs
         val desiredHeight = size + size / 3
 
         // Maximum possible width and desired height
-        setMeasuredDimension(measuredWidth, View.resolveSize(desiredHeight, heightMeasureSpec))
+        setMeasuredDimension(measuredWidth, resolveSize(desiredHeight, heightMeasureSpec))
     }
 
     private fun calculateWidths() {
@@ -198,8 +199,8 @@ class CandidateView(context: Context, attrs: AttributeSet) : View(context, attrs
             ) {
                 if (canvas != null) {
                     canvas.translate(mWordX[i].toFloat(), 0f)
-                    mSelectionHighlight.setBounds(0, 0, mWordWidth[i], height)
-                    mSelectionHighlight.draw(canvas)
+                    mSelectionHighlight?.setBounds(0, 0, mWordWidth[i], height)
+                    mSelectionHighlight?.draw(canvas)
                     canvas.translate((-mWordX[i]).toFloat(), 0f)
                 }
                 mSelectedIndex = i

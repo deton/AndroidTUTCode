@@ -1,71 +1,71 @@
 package jp.deadend.noname.skk
 
 import android.app.Activity
-import android.app.ListActivity
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import jp.deadend.noname.skk.databinding.ActivityListBinding
 
-class SKKMushroom : ListActivity() {
+class SKKMushroom : AppCompatActivity() {
+    private lateinit var binding: ActivityListBinding
     private lateinit var mStr: String
 
     private class AppInfo(
-            internal var icon: Drawable,
-            internal var appName: String,
-            internal var packageName: String,
-            internal var className: String
+        val icon: Drawable,
+        val appName: String,
+        val packageName: String,
+        val className: String
     )
+
+    private val callMushroom =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result : ActivityResult ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val extras = result.data?.extras
+                val s = if (extras == null) "" else extras.getString(REPLACE_KEY)
+
+                val retIntent = Intent(ACTION_BROADCAST)
+                retIntent.addCategory(CATEGORY_BROADCAST)
+                retIntent.putExtra(REPLACE_KEY, s)
+                sendBroadcast(retIntent)
+            }
+            finish()
+        }
 
     override fun onCreate(icicle: Bundle?) {
         super.onCreate(icicle)
+        binding = ActivityListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val extras = intent.extras
         mStr = if (extras == null) "" else { extras.getString(REPLACE_KEY) ?: "" }
-        listAdapter = AppListAdapter(this, loadMushroomAppList())
-    }
+        binding.listView.emptyView = binding.emptyView
+        binding.listView.adapter = AppListAdapter(this, loadMushroomAppList())
+        binding.listView.onItemClickListener = AdapterView.OnItemClickListener { l, _, position, _ ->
+            val info = l.getItemAtPosition(position) as AppInfo
 
-    override fun onListItemClick(l: ListView, v: View, position: Int, id: Long) {
-        val info = l.getItemAtPosition(position) as AppInfo
-
-        val intent = Intent(ACTION_SIMEJI_MUSHROOM)
-        intent.addCategory(CATEGORY_SIMEJI_MUSHROOM)
-        intent.setClassName(info.packageName, info.className)
-        intent.putExtra(REPLACE_KEY, mStr)
-        // intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivityForResult(intent, 0)
-    }
-
-    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
-        if (resultCode == Activity.RESULT_OK) {
-            val extras = data.extras
-            val s = if (extras == null) "" else extras.getString(REPLACE_KEY)
-
-            val retIntent = Intent(ACTION_BROADCAST)
-            retIntent.addCategory(CATEGORY_BROADCAST)
-            retIntent.putExtra(REPLACE_KEY, s)
-            sendBroadcast(retIntent)
+            val intent = Intent(ACTION_SIMEJI_MUSHROOM)
+            intent.addCategory(CATEGORY_SIMEJI_MUSHROOM)
+            intent.setClassName(info.packageName, info.className)
+            intent.putExtra(REPLACE_KEY, mStr)
+            // intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            callMushroom.launch(intent)
         }
-        finish()
+        binding.emptyView.text = getString(R.string.error_no_mushroom)
     }
 
     private fun loadMushroomAppList(): List<AppInfo> {
         val pm = packageManager
         val intent = Intent(ACTION_SIMEJI_MUSHROOM)
         intent.addCategory(CATEGORY_SIMEJI_MUSHROOM)
-        val appList = pm.queryIntentActivities(intent, 0)
-        if (appList.isEmpty()) {
-            Toast.makeText(this, getString(R.string.error_no_mushroom), Toast.LENGTH_LONG).show()
-            finish()
-        }
 
-        val result = appList.map {
+        val result = pm.queryIntentActivities(intent, 0).map {
             val ai = it.activityInfo
             val icon = it.loadIcon(pm)
             icon.setBounds(0, 0, 48, 48)

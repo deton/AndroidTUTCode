@@ -1,122 +1,90 @@
 package jp.deadend.noname.skk
 
-import android.os.Bundle
 import android.content.Context
-import android.preference.CheckBoxPreference
-import android.preference.Preference.OnPreferenceClickListener
-import android.preference.PreferenceActivity
-import android.preference.PreferenceManager
-import androidx.appcompat.app.AppCompatDelegate
-import android.view.inputmethod.InputMethodManager
+import androidx.preference.PreferenceManager
 
-class SKKPrefs : PreferenceActivity() {
-    private val delegate: AppCompatDelegate by lazy {
-        AppCompatDelegate.create(this, null)
-    }
+class SKKPrefs(context: Context) {
+    private val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    private val res = context.resources
 
-//    private var mDelegate: AppCompatDelegate? = null
-//    private val delegate: AppCompatDelegate
-//        get() {
-//            if (mDelegate == null) {
-//                mDelegate = AppCompatDelegate.create(this, null)
-//            }
-//            return requireNotNull(mDelegate) { "BUG: mDelegate is null!" }
-//        }
+//    var prefsVersion: Int
+//        get() = prefs.getInt(res.getString(R.string.pref_key_prefversion), -1)
+//        set(value) = prefs.edit().putInt(res.getString(R.string.pref_key_prefversion), value).apply()
 
-    override fun onCreate(icicle: Bundle?) {
-        super.onCreate(icicle)
-        delegate.installViewFactory()
-        delegate.onCreate(icicle)
-        delegate.setContentView(R.layout.skkprefs)
-        addPreferencesFromResource(R.xml.prefs)
+    var kutoutenType: String
+        get() = prefs.getString(res.getString(R.string.prefkey_kutouten_type), null) ?: "en"
+        set(value) = prefs.edit().putString(res.getString(R.string.prefkey_kutouten_type), value).apply()
 
-        delegate.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    var useCandidatesView: Boolean
+        get() = prefs.getBoolean(res.getString(R.string.prefkey_use_candidates_view), true)
+        set(value) = prefs.edit().putBoolean(res.getString(R.string.prefkey_use_candidates_view), value).apply()
 
-        val stickyPr = findPreference(getString(R.string.prefkey_sticky_meta)) as CheckBoxPreference
-        val sandsPr = findPreference(getString(R.string.prefkey_sands)) as CheckBoxPreference
-        stickyPr.onPreferenceClickListener = OnPreferenceClickListener {
-            sandsPr.isEnabled = !stickyPr.isChecked
-            true
-        }
-        sandsPr.onPreferenceClickListener = OnPreferenceClickListener {
-            stickyPr.isEnabled = !sandsPr.isChecked
-            true
-        }
+    var candidatesSize: Int
+        get() = prefs.getInt(res.getString(R.string.prefkey_candidates_size), 18)
+        set(value) = prefs.edit().putInt(res.getString(R.string.prefkey_candidates_size), value).apply()
 
-        if (stickyPr.isChecked) {
-            sandsPr.isEnabled = false
-        } else if (sandsPr.isChecked) {
-            stickyPr.isEnabled = false
-        }
-    }
+    var kanaKey: Int
+        get() = prefs.getInt(res.getString(R.string.prefkey_kana_key), 612) // 612はCtrl+j
+        set(value) = prefs.edit().putInt(res.getString(R.string.prefkey_kana_key), value).apply()
 
-    override fun onPause() {
-        super.onPause()
+    var cancelKey: Int
+        get() = prefs.getInt(res.getString(R.string.prefkey_cancel_key), 564) // 564はCtrl+g
+        set(value) = prefs.edit().putInt(res.getString(R.string.prefkey_cancel_key), value).apply()
 
-        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.sendAppPrivateCommand(null, SKKService.ACTION_READ_PREFS, null)
-    }
+    var toggleKanaKey: Boolean
+        get() = prefs.getBoolean(res.getString(R.string.prefkey_toggle_kana_key), true)
+        set(value) = prefs.edit().putBoolean(res.getString(R.string.prefkey_toggle_kana_key), value).apply()
 
-    companion object {
-        private fun getPrefs(context: Context) = PreferenceManager.getDefaultSharedPreferences(context)
+    var flickSensitivity: String
+        get() = prefs.getString(res.getString(R.string.prefkey_flick_sensitivity2), null) ?: "mid"
+        set(value) = prefs.edit().putString(res.getString(R.string.prefkey_flick_sensitivity2), value).apply()
 
-        fun getKutoutenType(context: Context): String = getPrefs(context)
-                .getString(context.getString(R.string.prefkey_kutouten_type), "en")
+    var curveSensitivity: String
+        get() = prefs.getString(res.getString(R.string.prefkey_curve_sensitivity), null) ?: "high"
+        set(value) = prefs.edit().putString(res.getString(R.string.prefkey_curve_sensitivity), value).apply()
 
-        fun getUseCandidatesView(context: Context) = getPrefs(context)
-                .getBoolean(context.getString(R.string.prefkey_use_candidates_view), true)
+    var useSoftKey: String
+        get() = prefs.getString(res.getString(R.string.prefkey_use_softkey), null) ?: "auto"
+        set(value) = prefs.edit().putString(res.getString(R.string.prefkey_use_softkey), value).apply()
 
-        fun getCandidatesSize(context: Context) = getPrefs(context)
-                .getInt(context.getString(R.string.prefkey_candidates_size), 18)
+    var usePopup: Boolean
+        get() = prefs.getBoolean(res.getString(R.string.prefkey_use_popup), true)
+        set(value) = prefs.edit().putBoolean(res.getString(R.string.prefkey_use_popup), value).apply()
 
-        fun getKanaKey(context: Context) = getPrefs(context)
-                .getInt(context.getString(R.string.prefkey_kana_key), 612)
-        // 612はCtrl+j
+    var useFixedPopup: Boolean
+        get() = prefs.getBoolean(res.getString(R.string.prefkey_fixed_popup), true)
+        set(value) = prefs.edit().putBoolean(res.getString(R.string.prefkey_fixed_popup), value).apply()
 
-        fun getCancelKey(context: Context) = getPrefs(context)
-                .getInt(context.getString(R.string.prefkey_cancel_key), 564)
-        // 564はCtrl+g
+    var useSoftCancelKey: Boolean
+        get() = prefs.getBoolean(res.getString(R.string.prefkey_use_soft_cancel_key), false)
+        set(value) = prefs.edit().putBoolean(res.getString(R.string.prefkey_use_soft_cancel_key), value).apply()
 
-        fun getToggleKanaKey(context: Context) = getPrefs(context)
-                .getBoolean(context.getString(R.string.prefkey_toggle_kana_key), true)
+    var keyHeightPort: Int
+        get() = prefs.getInt(res.getString(R.string.prefkey_key_height_port), 30)
+        set(value) = prefs.edit().putInt(res.getString(R.string.prefkey_key_height_port), value).apply()
 
-        fun getFlickSensitivity(context: Context): String = getPrefs(context)
-                .getString(context.getString(R.string.prefkey_flick_sensitivity2), "mid")
+    var keyHeightLand: Int
+        get() = prefs.getInt(res.getString(R.string.prefkey_key_height_land), 30)
+        set(value) = prefs.edit().putInt(res.getString(R.string.prefkey_key_height_land), value).apply()
 
-        fun getCurveSensitivity(context: Context): String  = getPrefs(context)
-                .getString(context.getString(R.string.prefkey_curve_sensitivity), "high")
+    var keyWidthPort: Int
+        get() = prefs.getInt(res.getString(R.string.prefkey_key_width_port), 100)
+        set(value) = prefs.edit().putInt(res.getString(R.string.prefkey_key_height_port), value).apply()
 
-        fun getUseSoftKey(context: Context): String = getPrefs(context)
-                .getString(context.getString(R.string.prefkey_use_softkey), "auto")
+    var keyWidthLand: Int
+        get() = prefs.getInt(res.getString(R.string.prefkey_key_width_land), 100)
+        set(value) = prefs.edit().putInt(res.getString(R.string.prefkey_key_height_land), value).apply()
 
-        fun getUsePopup(context: Context) = getPrefs(context)
-                .getBoolean(context.getString(R.string.prefkey_use_popup), true)
+    var keyPosition: String
+        get() = prefs.getString(res.getString(R.string.prefkey_key_position), null) ?: "center"
+        set(value) = prefs.edit().putString(res.getString(R.string.prefkey_key_position), value).apply()
 
-        fun getFixedPopup(context: Context) = getPrefs(context)
-                .getBoolean(context.getString(R.string.prefkey_fixed_popup), true)
+    var useStickyMeta: Boolean
+        get() = prefs.getBoolean(res.getString(R.string.prefkey_sticky_meta), false)
+        set(value) = prefs.edit().putBoolean(res.getString(R.string.prefkey_sticky_meta), value).apply()
 
-        fun getUseSoftCancelKey(context: Context) = getPrefs(context)
-                .getBoolean(context.getString(R.string.prefkey_use_soft_cancel_key), false)
+    var useSandS: Boolean
+        get() = prefs.getBoolean(res.getString(R.string.prefkey_sands), false)
+        set(value) = prefs.edit().putBoolean(res.getString(R.string.prefkey_sands), value).apply()
 
-        fun getKeyHeightPort(context: Context) = getPrefs(context)
-                .getInt(context.getString(R.string.prefkey_key_height_port), 30)
-
-        fun getKeyHeightLand(context: Context) = getPrefs(context)
-                .getInt(context.getString(R.string.prefkey_key_height_land), 30)
-
-        fun getKeyWidthPort(context: Context) = getPrefs(context)
-                .getInt(context.getString(R.string.prefkey_key_width_port), 100)
-
-        fun getKeyWidthLand(context: Context) = getPrefs(context)
-                .getInt(context.getString(R.string.prefkey_key_width_land), 100)
-
-        fun getKeyPosition(context: Context): String = getPrefs(context)
-                .getString(context.getString(R.string.prefkey_key_position), "center")
-
-        fun getStickyMeta(context: Context) = getPrefs(context)
-                .getBoolean(context.getString(R.string.prefkey_sticky_meta), false)
-
-        fun getSandS(context: Context) = getPrefs(context)
-                .getBoolean(context.getString(R.string.prefkey_sands), false)
-    }
 }

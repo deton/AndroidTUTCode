@@ -18,9 +18,9 @@ object SKKChooseState : SKKState {
 
     override fun processKey(context: SKKEngine, pcode: Int) {
         when (pcode) {
-            ' '.toInt() -> context.chooseAdjacentCandidate(true)
-            'x'.toInt() -> context.chooseAdjacentCandidate(false)
-            '>'.toInt() -> {
+            ' '.code -> context.chooseAdjacentCandidate(true)
+            'x'.code -> context.chooseAdjacentCandidate(false)
+            '>'.code -> {
                 // 接尾辞入力
                 context.pickCurrentCandidate()
                 context.changeState(SKKKanjiState)
@@ -28,12 +28,12 @@ object SKKChooseState : SKKState {
                 kanjiKey.append('>')
                 context.setComposingTextSKK(kanjiKey, 1)
             }
-            'l'.toInt() -> {
+            'l'.code -> {
                 // 暗黙の確定
                 context.pickCurrentCandidate()
                 context.changeState(SKKASCIIState)
             }
-            ':'.toInt() -> context.changeState(SKKNarrowingState)
+            ':'.code -> context.changeState(SKKNarrowingState)
             else -> {
                 // 暗黙の確定
                 context.pickCurrentCandidate()
@@ -47,12 +47,12 @@ object SKKChooseState : SKKState {
         if (kanjiKey.isEmpty()) {
             context.changeState(SKKHiraganaState)
         } else {
-            if (isAlphabet(kanjiKey[0].toInt())) { // Abbrevモード
+            if (isAlphabet(kanjiKey[0].code)) { // Abbrevモード
                 context.changeState(SKKAbbrevState)
             } else { // 漢字変換中
                 context.mOkurigana = null
                 context.changeState(SKKKanjiState)
-                if (isAlphabet(kanjiKey[kanjiKey.length - 1].toInt())) {
+                if (isAlphabet(kanjiKey[kanjiKey.length - 1].code)) {
                     kanjiKey.deleteCharAt(kanjiKey.length - 1) // 送りがなのアルファベットを削除
                 }
             }

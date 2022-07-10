@@ -4,18 +4,15 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
+import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import java.io.File
 import java.io.IOException
 import java.nio.charset.CharacterCodingException
@@ -25,58 +22,61 @@ import jdbm.btree.BTree
 import jdbm.helper.StringComparator
 import jdbm.helper.Tuple
 import jp.deadend.noname.dialog.ConfirmationDialogFragment
+import jp.deadend.noname.dialog.SimpleMessageDialogFragment
 import jp.deadend.noname.dialog.TextInputDialogFragment
-import kotlinx.android.synthetic.main.dic_manager.dicManagerButton
-import kotlinx.android.synthetic.main.dic_manager.dicManagerList
+import jp.deadend.noname.skk.databinding.ActivityDicManagerBinding
 
 class SKKDicManager : AppCompatActivity() {
+    private lateinit var binding: ActivityDicManagerBinding
     private val mDics = mutableListOf<Tuple>()
-
-    private var mAddingDic: String = "" // workaround
     private var isModified = false
 
-    public override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.dic_manager)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
-        val externalStorageDir = getExternalFilesDir(null)
-
-        if (externalStorageDir != null) {
-            dicManagerButton.setOnClickListener {
-                val intent = Intent(this@SKKDicManager, FileChooser::class.java)
-                intent.putExtra(FileChooser.KEY_MODE, FileChooser.MODE_OPEN)
-                intent.putExtra(FileChooser.KEY_DIRNAME, externalStorageDir.path)
-                startActivityForResult(intent, REQUEST_TEXTDIC)
+    private val addDicFileActivity =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result : ActivityResult ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                result.data?.getStringExtra(FileChooser.KEY_FILEPATH)?.let { addDic(it) }
             }
         }
 
+
+    public override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityDicManagerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         mDics.add(Tuple(getString(R.string.label_dicmanager_ldic), ""))
         val optDics = PreferenceManager.getDefaultSharedPreferences(this)
-                .getString(getString(R.string.prefkey_optional_dics), "")
+                .getString(getString(R.string.prefkey_optional_dics), "") ?: ""
         if (optDics.isNotEmpty()) {
             optDics.split("/").dropLastWhile { it.isEmpty() }.chunked(2).forEach {
                 mDics.add(Tuple(it[0], it[1]))
             }
         }
 
-        dicManagerList.adapter = TupleAdapter(this, mDics)
-        dicManagerList.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            if (position == 0) return@OnItemClickListener
-            val dialog = ConfirmationDialogFragment.newInstance(getString(R.string.message_confirm_remove_dic))
-            dialog.setListener(
+        binding.dicManagerList.adapter = TupleAdapter(this, mDics)
+        binding.dicManagerList.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
+            if (position == 0) {
+                SimpleMessageDialogFragment.newInstance(getString(R.string.message_main_dic))
+                    .show(supportFragmentManager, "dialog")
+            } else {
+                val dialog =
+                    ConfirmationDialogFragment.newInstance(getString(R.string.message_confirm_remove_dic))
+                dialog.setListener(
                     object : ConfirmationDialogFragment.Listener {
                         override fun onPositiveClick() {
                             val dicName = mDics[position].value as String
-                            deleteFile(dicName + ".db")
-                            deleteFile(dicName + ".lg")
+                            deleteFile("$dicName.db")
+                            deleteFile("$dicName.lg")
                             mDics.removeAt(position)
-                            (dicManagerList.adapter as TupleAdapter).notifyDataSetChanged()
+                            (binding.dicManagerList.adapter as TupleAdapter).notifyDataSetChanged()
                             isModified = true
                         }
+
                         override fun onNegativeClick() {}
                     })
-            dialog.show(supportFragmentManager, "dialog")
+                dialog.show(supportFragmentManager, "dialog")
+            }
         }
     }
 
@@ -93,32 +93,58 @@ class SKKDicManager : AppCompatActivity() {
                     .apply()
 
 
-            val inputMethodManager =
-                    getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            inputMethodManager.sendAppPrivateCommand(null, SKKService.ACTION_RELOAD_DICS, null)
+            val intent = Intent(SKKService.ACTION_COMMAND)
+            intent.putExtra(SKKService.KEY_COMMAND, SKKService.COMMAND_RELOAD_DICS)
+            sendBroadcast(intent)
         }
 
         super.onPause()
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        if (requestCode == REQUEST_TEXTDIC && resultCode == Activity.RESULT_OK) {
-            val str = intent?.getStringExtra(FileChooser.KEY_FILEPATH) ?: return
-            mAddingDic = str
-        }
-    }
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_dic_manager, menu)
 
-    override fun onResumeFragments() {
-        super.onResumeFragments()
-        if (mAddingDic.isNotEmpty()) {
-            addDic(mAddingDic) // use dialog after fragments resumed
-            mAddingDic = ""
-        }
+        return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> finish()
+            R.id.menu_dic_manager_add -> {
+                val externalStorageDir = getExternalFilesDir(null)
+                if (externalStorageDir != null) {
+                    val intent = Intent(this@SKKDicManager, FileChooser::class.java)
+                    intent.putExtra(FileChooser.KEY_MODE, FileChooser.MODE_OPEN)
+                    intent.putExtra(FileChooser.KEY_DIRNAME, externalStorageDir.path)
+                    addDicFileActivity.launch(intent)
+                }
+            }
+            R.id.menu_dic_manager_reset -> {
+                val dialog = ConfirmationDialogFragment.newInstance(
+                    getString(R.string.message_confirm_clear_dics)
+                )
+                dialog.setListener(
+                    object : ConfirmationDialogFragment.Listener {
+                        override fun onPositiveClick() {
+                            fileList().forEach { file ->
+                                if (!file.startsWith("skk_userdict")) { deleteFile(file) }
+                            }
+                            try {
+                                unzipFile(resources.assets.open(SKKService.DICT_ZIP_FILE), filesDir)
+                            } catch (e: IOException) {
+                                SimpleMessageDialogFragment.newInstance(
+                                    getString(R.string.error_extracting_dic_failed)
+                                ).show(supportFragmentManager, "dialog")
+                            }
+                            mDics.clear()
+                            mDics.add(Tuple(getString(R.string.label_dicmanager_ldic), ""))
+                            (binding.dicManagerList.adapter as TupleAdapter).notifyDataSetChanged()
+                            isModified = true
+                        }
+                        override fun onNegativeClick() {}
+                    })
+                dialog.show(supportFragmentManager, "dialog")
+            }
             else -> return super.onOptionsItemSelected(item)
         }
 
@@ -146,13 +172,13 @@ class SKKDicManager : AppCompatActivity() {
                                 name = "$dicName($suffix)"
                             }
                             mDics.add(Tuple(name, dicFileBaseName))
-                            (dicManagerList.adapter as TupleAdapter).notifyDataSetChanged()
+                            (binding.dicManagerList.adapter as TupleAdapter).notifyDataSetChanged()
                             isModified = true
                         }
 
                         override fun onNegativeClick() {
-                            deleteFile(dicFileBaseName + ".db")
-                            deleteFile(dicFileBaseName + ".lg")
+                            deleteFile("$dicFileBaseName.db")
+                            deleteFile("$dicFileBaseName.lg")
                         }
                     })
             dialog.show(supportFragmentManager, "dialog")
@@ -169,8 +195,18 @@ class SKKDicManager : AppCompatActivity() {
         }
 
         val filesDir = filesDir
-        filesDir.listFiles().forEach {
-            if (it.name == dicFileBaseName + ".db") { return null }
+        val filesList = filesDir?.listFiles()
+        if (filesDir == null || filesList == null) {
+            SimpleMessageDialogFragment.newInstance(
+                getString(R.string.error_access_failed, filesDir)
+            ).show(supportFragmentManager, "dialog")
+            return null
+        }
+        if (filesList.any { it.name == "$dicFileBaseName.db" }) {
+            SimpleMessageDialogFragment.newInstance(
+                getString(R.string.error_dic_exists, dicFileBaseName)
+            ).show(supportFragmentManager, "dialog")
+            return null
         }
 
         var recMan: RecordManager? = null
@@ -184,34 +220,32 @@ class SKKDicManager : AppCompatActivity() {
             loadFromTextDic(filePath, recMan, btree, true)
         } catch (e: IOException) {
             if (e is CharacterCodingException) {
-                Toast.makeText(
-                        this@SKKDicManager, getString(R.string.error_text_dic_coding),
-                        Toast.LENGTH_LONG
-                ).show()
+                SimpleMessageDialogFragment.newInstance(
+                    getString(R.string.error_text_dic_coding)
+                ).show(supportFragmentManager, "dialog")
             } else {
-                Toast.makeText(
-                        this@SKKDicManager, getString(R.string.error_file_load, filePath),
-                        Toast.LENGTH_LONG
-                ).show()
+                SimpleMessageDialogFragment.newInstance(
+                    getString(R.string.error_file_load, filePath)
+                ).show(supportFragmentManager, "dialog")
             }
-            Log.e("SKK", "SKKDicManager#loadDic() Error: " + e.toString())
+            Log.e("SKK", "SKKDicManager#loadDic() Error: $e")
             if (recMan != null) {
                 try {
                     recMan.close()
                 } catch (ee: IOException) {
-                    Log.e("SKK", "SKKDicManager#loadDic() can't close(): " + ee.toString())
+                    Log.e("SKK", "SKKDicManager#loadDic() can't close(): $ee")
                 }
 
             }
-            deleteFile(dicFileBaseName + ".db")
-            deleteFile(dicFileBaseName + ".lg")
+            deleteFile("$dicFileBaseName.db")
+            deleteFile("$dicFileBaseName.lg")
             return null
         }
 
         try {
             recMan.close()
         } catch (ee: IOException) {
-            Log.e("SKK", "SKKDicManager#loadDic() can't close(): " + ee.toString())
+            Log.e("SKK", "SKKDicManager#loadDic() can't close(): $ee")
             return null
         }
 
@@ -235,9 +269,5 @@ class SKKDicManager : AppCompatActivity() {
 
             return view
         }
-    }
-
-    companion object {
-        private const val REQUEST_TEXTDIC = 0
     }
 }

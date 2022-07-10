@@ -108,12 +108,12 @@ object RomajiConverter {
     // 1文字目と2文字目を合わせて"ん"・"っ"になるか判定
     // ならなかったらnull
     fun checkSpecialConsonants(first: Char, second: Int) = when {
-        (first == 'n') -> if (!isVowel(second) && second != 'n'.toInt() && second != 'y'.toInt()) {
+        (first == 'n') -> if (!isVowel(second) && second != 'n'.code && second != 'y'.code) {
             "ん"
         } else {
             null
         }
-        (first.toInt() == second) -> "っ"
+        (first.code == second) -> "っ"
         else -> null
     }
 }

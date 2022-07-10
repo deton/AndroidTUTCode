@@ -30,22 +30,6 @@
 		<item>center</item>
 		<item>right</item>
 	</string-array>
-	<string-array name="modifier_entries">
-		<item>なし</item>
-		<item>Alt</item>
-		<item>Ctrl</item>
-		<item>Sym</item>
-		<item>Meta</item>
-		<item>Function</item>
-	</string-array>
-	<string-array name="modifier_values">
-		<item>none</item>
-		<item>alt</item>
-		<item>ctrl</item>
-		<item>sym</item>
-		<item>meta</item>
-		<item>fn</item>
-	</string-array>
 	<string-array name="sensitivity_entries">
 		<item>高</item>
 		<item>中</item>
