@@ -20,37 +20,41 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.LinearLayout
-import kotlinx.android.synthetic.main.candidates.view.candidates
-import kotlinx.android.synthetic.main.candidates.view.candidate_left
-import kotlinx.android.synthetic.main.candidates.view.candidate_right
+import jp.deadend.noname.skk.databinding.ViewCandidatesBinding
 
 class CandidateViewContainer(screen: Context, attrs: AttributeSet) : LinearLayout(screen, attrs) {
+    private lateinit var binding: ViewCandidatesBinding
     private var mFontSize = -1
     private var mButtonWidth = screen.resources.getDimensionPixelSize(R.dimen.candidates_scrollbutton_width)
 
+    override fun onFinishInflate() {
+        super.onFinishInflate()
+        binding = ViewCandidatesBinding.bind(this)
+    }
+
     fun initViews() {
-        candidate_left.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) candidates.scrollPrev()
+        binding.candidateLeft.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) binding.candidates.scrollPrev()
             false
         }
-        candidate_right.setOnTouchListener { _, event ->
-            if (event.action == MotionEvent.ACTION_DOWN) candidates.scrollNext()
+        binding.candidateRight.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) binding.candidates.scrollNext()
             false
         }
     }
 
     fun setScrollButtonsEnabled(left: Boolean, right: Boolean) {
-        candidate_left.isEnabled = left
-        candidate_right.isEnabled = right
+        binding.candidateLeft.isEnabled = left
+        binding.candidateRight.isEnabled = right
     }
 
     fun setSize(px: Int) {
         if (px == mFontSize) return
 
-        candidates.setTextSize(px)
-        candidates.layoutParams = LinearLayout.LayoutParams(0, px + px / 3, 1f)
-        candidate_left.layoutParams = LinearLayout.LayoutParams(mButtonWidth, px + px / 3)
-        candidate_right.layoutParams = LinearLayout.LayoutParams(mButtonWidth, px + px / 3)
+        binding.candidates.setTextSize(px)
+        binding.candidates.layoutParams = LayoutParams(0, px + px / 3, 1f)
+        binding.candidateLeft.layoutParams = LayoutParams(mButtonWidth, px + px / 3)
+        binding.candidateRight.layoutParams = LayoutParams(mButtonWidth, px + px / 3)
         requestLayout()
 
         mFontSize = px

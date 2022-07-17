@@ -75,15 +75,12 @@ interface SKKDictionaryInterface {
     val mRecMan: RecordManager
     val mRecID: Long
     val mBTree: BTree
-    var isValid: Boolean
 
     fun findKeys(key: String): List<String> {
         val list = mutableListOf<String>()
         val tuple = Tuple()
         val browser: TupleBrowser
         var str: String
-
-        if (!isValid) { return list }
 
         try {
             browser = mBTree.browse(key) ?: return list
@@ -92,7 +89,7 @@ interface SKKDictionaryInterface {
                 if (!browser.getNext(tuple)) break
                 str = tuple.key as String
                 if (!str.startsWith(key)) break
-                if (isAlphabet(str[str.length - 1].toInt()) && !isAlphabet(str[0].toInt())) continue
+                if (isAlphabet(str[str.length - 1].code) && !isAlphabet(str[0].code)) continue
                 // 送りありエントリは飛ばす
 
                 list.add(str)
@@ -113,7 +110,5 @@ interface SKKDictionaryInterface {
             Log.e("SKK", "Error in close(): $e")
             throw RuntimeException(e)
         }
-
-        isValid = false
     }
 }

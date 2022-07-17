@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
-import android.os.Environment
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
@@ -16,11 +15,13 @@ import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import kotlinx.android.synthetic.main.filechooser.*
+import jp.deadend.noname.dialog.SimpleMessageDialogFragment
+import jp.deadend.noname.skk.databinding.ActivityFileChooserBinding
 import java.io.File
 import java.util.Locale
 
 class FileChooser : AppCompatActivity() {
+    private lateinit var binding: ActivityFileChooserBinding
     private lateinit var mCurrentDir: File
     private lateinit var mMode: String
     private lateinit var mSearchToast: Toast
@@ -29,12 +30,13 @@ class FileChooser : AppCompatActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.filechooser)
+        binding = ActivityFileChooserBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val extras = intent.extras
         extras ?: finish()
 
-        val m = extras.getString(KEY_MODE)
+        val m = extras?.getString(KEY_MODE)
         m ?: finish()
         when (m) {
             MODE_SAVE -> {
@@ -47,27 +49,21 @@ class FileChooser : AppCompatActivity() {
             }
             MODE_DIR -> {
                 title = getString(R.string.label_filechooser_opendir)
-                editTextFileName.visibility = View.GONE
+                binding.editTextFileName.visibility = View.GONE
                 mMode = MODE_DIR
             }
             else -> finish()
         }
 
-        mFontSize = extras.getInt(KEY_FONTSIZE, DEFAULT_FONTSIZE)
+        mFontSize = extras?.getInt(KEY_FONTSIZE, DEFAULT_FONTSIZE) ?: DEFAULT_FONTSIZE
 
-        val dirName = extras.getString(KEY_DIRNAME)
-        val defaultDir = Environment.getExternalStorageDirectory().path
-        if (dirName == null) {
-            mCurrentDir = File(defaultDir)
-        } else {
-            mCurrentDir = File(dirName)
-            if (!(mCurrentDir.isDirectory && mCurrentDir.canRead())) {
-                mCurrentDir = File(defaultDir)
-            }
-        }
+        val dirName = extras?.getString(KEY_DIRNAME)
+        (dirName?.let { File(it) } ?: getExternalFilesDir(null))?.also {
+            if (it.isDirectory && it.canRead()) { mCurrentDir = it } else finish()
+        } ?: finish()
         fillList()
 
-        buttonOK.setOnClickListener {
+        binding.buttonOK.setOnClickListener {
             val intent = Intent()
             val currentDirStr = mCurrentDir.absolutePath + File.separator
             if (mMode == MODE_DIR) {
@@ -76,7 +72,7 @@ class FileChooser : AppCompatActivity() {
                 intent.putExtra(KEY_FILEPATH, currentDirStr)
                 setResult(Activity.RESULT_OK, intent)
             } else {
-                val fileNameStr = editTextFileName.text.toString()
+                val fileNameStr = binding.editTextFileName.text.toString()
                 if (fileNameStr.isEmpty()) {
                     setResult(Activity.RESULT_CANCELED, intent)
                 } else {
@@ -89,26 +85,26 @@ class FileChooser : AppCompatActivity() {
             finish()
         }
 
-        buttonCancel.setOnClickListener {
+        binding.buttonCancel.setOnClickListener {
             val intent = Intent()
             setResult(Activity.RESULT_CANCELED, intent)
             finish()
         }
 
-        listView.setOnItemClickListener { _, _, position, _ ->
-            val item = listView.adapter.getItem(position) as String
+        binding.listView.setOnItemClickListener { _, _, position, _ ->
+            val item = binding.listView.adapter.getItem(position) as String
 
             if (item.startsWith(getString(R.string.label_filechooser_parent_dir))) {
-                checkAndChangeDir(mCurrentDir.parentFile)
+                checkAndChangeDir(mCurrentDir.parentFile ?: mCurrentDir)
             } else if (item.substring(item.length - 1) == File.separator) {
                 checkAndChangeDir(File(mCurrentDir, item))
             } else {
                 if (mMode == MODE_OPEN) {
-                    editTextFileName.setText(item)
-                    buttonOK.requestFocus()
+                    binding.editTextFileName.setText(item)
+                    binding.buttonOK.requestFocus()
                 } else if (mMode == MODE_SAVE) {
-                    editTextFileName.setText(item)
-                    editTextFileName.requestFocus()
+                    binding.editTextFileName.setText(item)
+                    binding.editTextFileName.requestFocus()
                 }
             }
         }
@@ -116,11 +112,11 @@ class FileChooser : AppCompatActivity() {
         // quick search
         mSearchToast = Toast.makeText(this, "", Toast.LENGTH_SHORT)
         mSearchToast.setGravity(Gravity.BOTTOM or Gravity.END, 10, 10)
-        listView.setOnKeyListener(OnKeyListener { v, _, event ->
+        binding.listView.setOnKeyListener(OnKeyListener { v, _, event ->
             if (event.action == KeyEvent.ACTION_DOWN) {
                 val label = event.displayLabel
-                if (label.toInt() in 65..90 || label.toInt() in 97..122) {
-                    mSearchString.append(label.toLowerCase())
+                if (label.code in 65..90 || label.code in 97..122) {
+                    mSearchString.append(label.lowercaseChar())
                     val str = mSearchString.toString()
                     mSearchToast.setText(str)
                     mSearchToast.show()
@@ -129,7 +125,7 @@ class FileChooser : AppCompatActivity() {
                     val startIndex = if (lv.selectedItem == null) 0 else lv.selectedItemPosition
                     for (i in startIndex until lv.count) {
                         if ((lv.getItemAtPosition(i) as String)
-                                        .toLowerCase(Locale.US).startsWith(str)
+                                .lowercase(Locale.US).startsWith(str)
                         ) {
                             lv.setSelection(i)
                             return@OnKeyListener true
@@ -138,7 +134,7 @@ class FileChooser : AppCompatActivity() {
                     if (startIndex > 0) { // restart from the top
                         for (i in 0 until startIndex - 1) {
                             if ((lv.getItemAtPosition(i) as String)
-                                            .toLowerCase(Locale.US).startsWith(str)
+                                    .lowercase(Locale.US).startsWith(str)
                             ) {
                                 lv.setSelection(i)
                                 return@OnKeyListener true
@@ -164,27 +160,25 @@ class FileChooser : AppCompatActivity() {
         if (newDir.isDirectory && newDir.canRead()) {
             mCurrentDir = newDir
             fillList()
-            editTextFileName.setText("")
+            binding.editTextFileName.setText("")
         } else {
-            Toast.makeText(
-                    this, getString(R.string.error_access_failed, newDir.absolutePath),
-                    Toast.LENGTH_SHORT
-            ).show()
+            SimpleMessageDialogFragment.newInstance(
+                getString(R.string.error_access_failed, newDir.absolutePath)
+            ).show(supportFragmentManager, "dialog")
         }
     }
 
     private fun fillList() {
         val filesArray = mCurrentDir.listFiles()
         if (filesArray == null) {
-            Toast.makeText(
-                    this, getString(R.string.error_access_failed, mCurrentDir.absolutePath),
-                    Toast.LENGTH_SHORT
-            ).show()
+            SimpleMessageDialogFragment.newInstance(
+                getString(R.string.error_access_failed, mCurrentDir.absolutePath)
+            ).show(supportFragmentManager, "dialog")
             return
         }
 
-        textViewDirName.text = mCurrentDir.absolutePath
-        textViewDirName.textSize = (mFontSize + 2).toFloat()
+        binding.textViewDirName.text = mCurrentDir.absolutePath
+        binding.textViewDirName.textSize = (mFontSize + 2).toFloat()
 
         val dirs = mutableListOf<String>()
         val files = mutableListOf<String>()
@@ -230,7 +224,7 @@ class FileChooser : AppCompatActivity() {
                 }
             }
         }
-        listView.adapter = fileList
+        binding.listView.adapter = fileList
     }
 
     companion object {

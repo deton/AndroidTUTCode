@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import android.view.inputmethod.InputMethodManager
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -14,7 +13,8 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
@@ -27,7 +27,7 @@ import jdbm.helper.StringComparator
 import jdbm.helper.Tuple
 import jp.deadend.noname.dialog.ConfirmationDialogFragment
 import jp.deadend.noname.dialog.SimpleMessageDialogFragment
-import kotlinx.android.synthetic.main.userdictool.userDictoolList
+import jp.deadend.noname.skk.databinding.ActivityUserDicToolBinding
 
 class SKKUserDicTool : AppCompatActivity() {
     private lateinit var mRecMan: RecordManager
@@ -36,13 +36,39 @@ class SKKUserDicTool : AppCompatActivity() {
     private var mEntryList = mutableListOf<Tuple>()
     private lateinit var mAdapter: EntryAdapter
 
+    private val importFileActivity =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result : ActivityResult ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                openUserDict()
+
+                result.data?.getStringExtra(FileChooser.KEY_FILEPATH)?.let {
+                    try {
+                        loadFromTextDic(it, mRecMan, mBtree, false)
+                    } catch (e: IOException) {
+                        if (e is CharacterCodingException) {
+                            SimpleMessageDialogFragment.newInstance(
+                                getString(R.string.error_text_dic_coding)
+                            ).show(supportFragmentManager, "dialog")
+                        } else {
+                            SimpleMessageDialogFragment.newInstance(
+                                getString(R.string.error_file_load, it)
+                            ).show(supportFragmentManager, "dialog")
+                        }
+                    }
+
+                    updateListItems()
+                }
+            }
+        }
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.userdictool)
+        val binding = ActivityUserDicToolBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-        userDictoolList.emptyView = findViewById(R.id.EmptyListItem)
-        userDictoolList.onItemClickListener =
+        binding.userDictoolList.emptyView = binding.EmptyListItem
+        binding.userDictoolList.onItemClickListener =
                 AdapterView.OnItemClickListener { parent, _, position, _ ->
             val dialog = ConfirmationDialogFragment.newInstance(getString(R.string.message_confirm_remove))
             dialog.setListener(
@@ -62,11 +88,12 @@ class SKKUserDicTool : AppCompatActivity() {
             dialog.show(supportFragmentManager, "dialog")
         }
 
-        val inputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        inputMethodManager.sendAppPrivateCommand(null, SKKService.ACTION_COMMIT_USERDIC, null)
+        val intent = Intent(SKKService.ACTION_COMMAND)
+        intent.putExtra(SKKService.KEY_COMMAND, SKKService.COMMAND_COMMIT_USERDIC)
+        sendBroadcast(intent)
 
         mAdapter = EntryAdapter(this, mEntryList)
-        userDictoolList.adapter = mAdapter
+        binding.userDictoolList.adapter = mAdapter
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -75,15 +102,14 @@ class SKKUserDicTool : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        when (id) {
+        when (item.itemId) {
             R.id.menu_user_dic_tool_import -> {
                 val dir = getExternalFilesDir(null)
                 if (dir != null) {
                     val intent = Intent(this@SKKUserDicTool, FileChooser::class.java)
                     intent.putExtra(FileChooser.KEY_MODE, FileChooser.MODE_OPEN)
                     intent.putExtra(FileChooser.KEY_DIRNAME, dir.path)
-                    startActivityForResult(intent, REQUEST_IMPORT)
+                    importFileActivity.launch(intent)
                 } else {
                     val errorDialog = SimpleMessageDialogFragment.newInstance(
                             getString(R.string.error_open_external_storage)
@@ -138,31 +164,6 @@ class SKKUserDicTool : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        openUserDict()
-
-        if (requestCode == REQUEST_IMPORT && resultCode == Activity.RESULT_OK) {
-            val str = intent?.getStringExtra(FileChooser.KEY_FILEPATH) ?: return
-            try {
-                loadFromTextDic(str, mRecMan, mBtree, false)
-            } catch (e: IOException) {
-                if (e is CharacterCodingException) {
-                    Toast.makeText(
-                            this@SKKUserDicTool, getString(R.string.error_text_dic_coding),
-                            Toast.LENGTH_LONG
-                    ).show()
-                } else {
-                    Toast.makeText(
-                            this@SKKUserDicTool, getString(R.string.error_file_load, str),
-                            Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-
-            updateListItems()
-        }
-    }
-
     override fun onResume() {
         super.onResume()
 
@@ -179,8 +180,8 @@ class SKKUserDicTool : AppCompatActivity() {
         closeUserDict()
 
         val dicName = getString(R.string.dic_name_user)
-        deleteFile(dicName + ".db")
-        deleteFile(dicName + ".lg")
+        deleteFile("$dicName.db")
+        deleteFile("$dicName.lg")
 
         try {
             mRecMan = RecordManagerFactory.createRecordManager(filesDir.absolutePath + "/" + dicName)
@@ -207,7 +208,7 @@ class SKKUserDicTool : AppCompatActivity() {
                         try {
                             writeToExternalStorage(dir)
                         } catch (e: IOException) {
-                            dlog("onFailToOpenUserDict(): " + e.toString())
+                            dlog("onFailToOpenUserDict(): $e")
                         }
                     }
 
@@ -318,14 +319,10 @@ class SKKUserDicTool : AppCompatActivity() {
             val tv = convertView
                     ?: mLayoutInflater.inflate(android.R.layout.simple_list_item_1, parent, false)
 
-            val item = getItem(position)
+            val item = getItem(position) ?: Tuple("", "")
             (tv as TextView).text = (item.key as String) + "  " + (item.value as String)
 
             return tv
         }
-    }
-
-    companion object {
-        private const val REQUEST_IMPORT = 0
     }
 }

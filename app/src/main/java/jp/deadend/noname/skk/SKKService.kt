@@ -1,5 +1,7 @@
 package jp.deadend.noname.skk
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -9,24 +11,25 @@ import android.inputmethodservice.InputMethodService
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.Handler
-import android.preference.PreferenceManager
+import android.os.Looper
+import androidx.preference.PreferenceManager
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.text.ClipboardManager
+import android.content.ClipboardManager
+import android.os.Build
 import android.text.InputType
+import android.util.Log
 import android.util.TypedValue
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.WindowManager
-import android.widget.Toast
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 
 import jp.deadend.noname.skk.engine.*
-import java.io.BufferedReader
-import java.io.File
-import java.io.IOException
-import java.io.InputStreamReader
+import java.io.*
 
 class SKKService : InputMethodService() {
     private var mCandidateViewContainer: CandidateViewContainer? = null
@@ -57,7 +60,7 @@ class SKKService : InputMethodService() {
     private var mUseSoftKeyboard = false
 
     private var mMushroomWord: String? = null
-    private val hMushroom = Handler()
+    private val hMushroom = Handler(Looper.getMainLooper())
     private val rMushroom = Runnable {
         val word = mMushroomWord
         word?.let {
@@ -80,50 +83,101 @@ class SKKService : InputMethodService() {
 //                }
         }
     }
+    private val mReloadReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.getStringExtra(KEY_COMMAND)) {
+                COMMAND_COMMIT_USERDIC -> {
+                    dlog("commit user dictionary!")
+                    mEngine.commitUserDictChanges()
+                }
+                COMMAND_READ_PREFS -> readPrefs()
+                COMMAND_RELOAD_DICS -> mEngine.reopenDictionaries(openDictionaries())
+                COMMAND_RELOAD_ROMAJIMAP -> mEngine.reloadRomajiMap(loadRomajiMap())
+            }
+        }
+    }
+
+    private fun extractDictionary(): Boolean {
+        val notificationID = 0
+        var notificationBuilder: NotificationCompat.Builder
+        try {
+            dlog("dic extract start")
+            notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_skk)
+                .setContentTitle(getText(R.string.message_extracting_dic))
+                .setAutoCancel(true)
+            with(NotificationManagerCompat.from(this)) {
+                notify(notificationID, notificationBuilder.build())
+            }
+
+            unzipFile(resources.assets.open(DICT_ZIP_FILE), filesDir)
+
+            with(NotificationManagerCompat.from(this)) {
+                cancel(notificationID)
+            }
+            notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_skk)
+                .setContentTitle(getText(R.string.message_dic_extracted))
+                .setAutoCancel(true)
+            with(NotificationManagerCompat.from(this)) {
+                notify(notificationID, notificationBuilder.build())
+            }
+            return true
+        } catch (e: IOException) {
+            Log.e("SKK", "I/O error in extracting dictionary files: $e")
+            with(NotificationManagerCompat.from(this)) {
+                cancel(notificationID)
+            }
+            notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_skk)
+                .setContentTitle(getText(R.string.error_extracting_dic_failed))
+                .setAutoCancel(true)
+            with(NotificationManagerCompat.from(this)) {
+                notify(notificationID, notificationBuilder.build())
+            }
+            return false
+        }
+    }
 
     private fun openDictionaries(): List<SKKDictionary> {
         val result = mutableListOf<SKKDictionary>()
         val dd = filesDir.absolutePath
-        dlog("dict dir: " + dd)
+        dlog("dict dir: $dd")
 
-        result.add(SKKDictionary(dd + "/" + getString(R.string.dic_name_main), getString(R.string.btree_name)))
-        if (!result[0].isValid) {
-            Toast.makeText(this@SKKService, getString(R.string.error_dic), Toast.LENGTH_LONG).show()
-            stopSelf()
+        SKKDictionary.newInstance(
+            dd + "/" + getString(R.string.dic_name_main), getString(R.string.btree_name)
+        )?.also {
+            result.add(it)
+        } ?: run {
+            dlog("dict open failed")
+            if (!extractDictionary()) { stopSelf() }
+            SKKDictionary.newInstance(
+                dd + "/" + getString(R.string.dic_name_main), getString(R.string.btree_name)
+            )?.also {
+                result.add(it)
+            } ?: run {
+                val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_skk)
+                    .setContentTitle(getString(R.string.error_dic))
+                    .setAutoCancel(true)
+                with(NotificationManagerCompat.from(this)) {
+                    notify(0, notificationBuilder.build())
+                }
+                stopSelf()
+            }
         }
-
         val prefVal = PreferenceManager.getDefaultSharedPreferences(this)
                 .getString(getString(R.string.prefkey_optional_dics), "")
-        prefVal?.let {
-            if (prefVal.isNotEmpty()) {
-                val vals = prefVal.split("/").dropLastWhile { it.isEmpty() }
-                var i = 1
-                while (i < vals.size) {
-                    result.add(SKKDictionary(dd + "/" + vals[i], getString(R.string.btree_name)))
-                    val last = result.size - 1
-                    if (!result[last].isValid) result.removeAt(last)
-                    i += 2
-                }
+        if (!prefVal.isNullOrEmpty()) {
+            val vals = prefVal.split("/").dropLastWhile { it.isEmpty() }
+            for (i in 1 until vals.size step 2) {
+                SKKDictionary.newInstance(
+                    dd + "/" + vals[i], getString(R.string.btree_name)
+                )?.let { result.add(it) }
             }
         }
 
         return result
-    }
-
-    private fun openUserDictionary(): SKKUserDictionary {
-        val dd = filesDir.absolutePath
-        val dic = SKKUserDictionary(
-                dd + "/" + getString(R.string.dic_name_user), getString(R.string.btree_name)
-        )
-        if (!dic.isValid) {
-            Toast.makeText(
-                    this@SKKService, getString(R.string.error_user_dic),
-                    Toast.LENGTH_LONG
-            ).show()
-            stopSelf()
-        }
-
-        return dic
     }
 
     private fun loadRomajiMap(): Map<String, String> {
@@ -146,10 +200,13 @@ class SKKService : InputMethodService() {
                 importedFile.forEachLine(action=::line2romajimap)
                 return romajimap.toMap()
             } catch (e: IOException) {
-                Toast.makeText(
-                        this@SKKService, getString(R.string.error_file_load, importedFile.path),
-                        Toast.LENGTH_LONG
-                ).show()
+                val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setSmallIcon(R.drawable.ic_skk)
+                    .setContentTitle(getString(R.string.error_file_load, importedFile.path))
+                    .setAutoCancel(true)
+                with(NotificationManagerCompat.from(this)) {
+                    notify(0, notificationBuilder.build())
+                }
                 // fall through to load from assets
                 romajimap.clear()
             }
@@ -161,10 +218,13 @@ class SKKService : InputMethodService() {
                 return romajimap.toMap()
             }
         } catch (e: IOException) {
-            Toast.makeText(
-                    this@SKKService, getString(R.string.error_file_load, FILENAME_ROMAJIMAP),
-                    Toast.LENGTH_LONG
-            ).show()
+            val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_skk)
+                .setContentTitle(getString(R.string.error_file_load, FILENAME_ROMAJIMAP))
+                .setAutoCancel(true)
+            with(NotificationManagerCompat.from(this)) {
+                notify(0, notificationBuilder.build())
+            }
             stopSelf()
             return emptyMap<String, String>()
         }
@@ -175,11 +235,37 @@ class SKKService : InputMethodService() {
 
         Thread.setDefaultUncaughtExceptionHandler(MyUncaughtExceptionHandler(applicationContext))
 
-        mEngine = SKKEngine(this@SKKService, openDictionaries(), openUserDictionary(), loadRomajiMap())
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val dics = openDictionaries()
+        if (dics.isEmpty()) { stopSelf() }
+
+        val userDic = SKKUserDictionary.newInstance(
+            filesDir.absolutePath + "/" + getString(R.string.dic_name_user),
+            getString(R.string.btree_name)
+        )
+        if (userDic == null) {
+            val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_skk)
+                .setContentTitle(getString(R.string.error_user_dic))
+                .setAutoCancel(true)
+            with(NotificationManagerCompat.from(this)) {
+                notify(0, notificationBuilder.build())
+            }
+            stopSelf()
+        }
+
+        mEngine = SKKEngine(this@SKKService, dics, userDic!!, loadRomajiMap())
 
         val filter = IntentFilter(SKKMushroom.ACTION_BROADCAST)
         filter.addCategory(SKKMushroom.CATEGORY_BROADCAST)
         registerReceiver(mMushroomReceiver, filter)
+        registerReceiver(mReloadReceiver, IntentFilter(ACTION_COMMAND))
 
         mSpeechRecognizer.setRecognitionListener(object : RecognitionListener {
             override fun onBeginningOfSpeech() {}
@@ -205,7 +291,7 @@ class SKKService : InputMethodService() {
                 }
                 mFlickJPInputView?.setHighlightedKey(-1)
                 mIsRecording = false
-                Handler().postDelayed({
+                Handler(Looper.getMainLooper()).postDelayed({
                     mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mStreamVolume, 0)
                 }, 500)
             }
@@ -217,9 +303,9 @@ class SKKService : InputMethodService() {
 
     private fun readPrefs() {
         val context = applicationContext
-        mStickyShift = SKKPrefs.getStickyMeta(context)
-        mSandS = SKKPrefs.getSandS(context)
-        mEngine.setZenkakuPunctuationMarks(SKKPrefs.getKutoutenType(context))
+        mStickyShift = skkPrefs.useStickyMeta
+        mSandS = skkPrefs.useSandS
+        mEngine.setZenkakuPunctuationMarks(skkPrefs.kutoutenType)
 
         mUseSoftKeyboard = checkUseSoftKeyboard()
         updateInputViewShown()
@@ -227,7 +313,7 @@ class SKKService : InputMethodService() {
         if (mFlickJPInputView != null) readPrefsForInputView()
         val container = mCandidateViewContainer
         container?.let {
-            val sp = SKKPrefs.getCandidatesSize(context)
+            val sp = skkPrefs.candidatesSize
             val px = TypedValue.applyDimension(
                     TypedValue.COMPLEX_UNIT_SP, sp.toFloat(), context.resources.displayMetrics
             ).toInt()
@@ -247,12 +333,12 @@ class SKKService : InputMethodService() {
         val keyWidth: Int
         when (config.orientation) {
             Configuration.ORIENTATION_PORTRAIT -> {
-                keyHeight = SKKPrefs.getKeyHeightPort(context)
-                keyWidth = SKKPrefs.getKeyWidthPort(context)
+                keyHeight = skkPrefs.keyHeightPort
+                keyWidth = skkPrefs.keyWidthPort
             }
             Configuration.ORIENTATION_LANDSCAPE -> {
-                keyHeight = SKKPrefs.getKeyHeightLand(context)
-                keyWidth = SKKPrefs.getKeyWidthLand(context)
+                keyHeight = skkPrefs.keyHeightLand
+                keyWidth = skkPrefs.keyWidthLand
             }
             else -> {
                 keyHeight = 30
@@ -262,10 +348,10 @@ class SKKService : InputMethodService() {
 
         flick.prepareNewKeyboard(
                 applicationContext,
-                keyWidth, mScreenHeight * keyHeight / (4 * 100), SKKPrefs.getKeyPosition(context)
+                keyWidth, mScreenHeight * keyHeight / (4 * 100), skkPrefs.keyPosition
         )
         val density = context.resources.displayMetrics.density
-        val sensitivity = when (SKKPrefs.getFlickSensitivity(context)) {
+        val sensitivity = when (skkPrefs.flickSensitivity) {
             "low"  -> (36 * density + 0.5f).toInt()
             "high" -> (12 * density + 0.5f).toInt()
             else   -> (24 * density + 0.5f).toInt()
@@ -277,19 +363,22 @@ class SKKService : InputMethodService() {
 
     private fun checkUseSoftKeyboard(): Boolean {
         var result = true
-        val use_softkey = SKKPrefs.getUseSoftKey(applicationContext)
-        if (use_softkey == "on") {
-            dlog("software keyboard forced")
-            result = true
-        } else if (use_softkey == "off") {
-            dlog("software keyboard disabled")
-            result = false
-        } else {
-            val config = resources.configuration
-            if (config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
-                result = false
-            } else if (config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
+        when (skkPrefs.useSoftKey) {
+            "on" -> {
+                dlog("software keyboard forced")
                 result = true
+            }
+            "off" -> {
+                dlog("software keyboard disabled")
+                result = false
+            }
+            else -> {
+                val config = resources.configuration
+                if (config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
+                    result = false
+                } else if (config.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES) {
+                    result = true
+                }
             }
         }
 
@@ -310,10 +399,11 @@ class SKKService : InputMethodService() {
     }
 
     override fun onEvaluateInputViewShown(): Boolean {
+        super.onEvaluateInputViewShown()
         return mUseSoftKeyboard
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration?) {
+    override fun onConfigurationChanged(newConfig: Configuration) {
         mFlickJPInputView = null
         mQwertyInputView = null
         mAbbrevKeyboardView = null
@@ -383,7 +473,7 @@ class SKKService : InputMethodService() {
      * needs to be generated, like [.onCreateInputView].
      */
     override fun onCreateCandidatesView(): View {
-        val container = layoutInflater.inflate(R.layout.candidates, null) as CandidateViewContainer
+        val container = layoutInflater.inflate(R.layout.view_candidates, null) as CandidateViewContainer
         container.initViews()
         val view = container.findViewById(R.id.candidates) as CandidateView
         view.setService(this)
@@ -391,7 +481,7 @@ class SKKService : InputMethodService() {
         mCandidateView = view
 
         val context = applicationContext
-        val sp = SKKPrefs.getCandidatesSize(context)
+        val sp = skkPrefs.candidatesSize
         val px = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, sp.toFloat(), context.resources.displayMetrics
         ).toInt()
@@ -424,24 +514,13 @@ class SKKService : InputMethodService() {
     override fun onDestroy() {
         mEngine.commitUserDictChanges()
         unregisterReceiver(mMushroomReceiver)
+        unregisterReceiver(mReloadReceiver)
 
         super.onDestroy()
     }
 
     // never use fullscreen mode
     override fun onEvaluateFullscreenMode() = false
-
-    override fun onAppPrivateCommand(action: String, data: Bundle?) {
-        when (action) {
-            ACTION_COMMIT_USERDIC -> {
-                dlog("commit user dictionary!")
-                mEngine.commitUserDictChanges()
-            }
-            ACTION_READ_PREFS -> readPrefs()
-            ACTION_RELOAD_DICS -> mEngine.reopenDictionaries(openDictionaries())
-            ACTION_RELOAD_ROMAJIMAP -> mEngine.reloadRomajiMap(loadRomajiMap())
-        }
-    }
 
     override fun onComputeInsets(outInsets: Insets?) {
         super.onComputeInsets(outInsets)
@@ -467,7 +546,7 @@ class SKKService : InputMethodService() {
             KeyEvent.KEYCODE_SPACE -> {
                 if (mSandS) {
                     mSpacePressed = false
-                    if (!mSandSUsed) processKey(' '.toInt())
+                    if (!mSandSUsed) processKey(' '.code)
                     mSandSUsed = false
                     return true
                 }
@@ -494,16 +573,15 @@ class SKKService : InputMethodService() {
      * them or let them continue to the app.
      */
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        val context = applicationContext
         val engineState = mEngine.state
-        val encodedKey = SetKeyPreference.encodeKey(event)
+        val encodedKey = SetKeyDialogFragment.encodeKey(event)
 
         // Process special keys
-        if (encodedKey == SKKPrefs.getKanaKey(context)) {
+        if (encodedKey == skkPrefs.kanaKey) {
             mEngine.handleKanaKey()
             return true
         }
-        if (encodedKey == SKKPrefs.getEisuKey(context)) {
+        if (encodedKey == skkPrefs.eisuKey) {
             mEngine.handleEisuKey()
             return true
         }
@@ -512,7 +590,7 @@ class SKKService : InputMethodService() {
             return super.onKeyDown(keyCode, event)
         }
 
-        if (encodedKey == SKKPrefs.getCancelKey(context)) {
+        if (encodedKey == skkPrefs.cancelKey) {
             if (handleCancel()) { return true }
         }
 
@@ -557,7 +635,7 @@ class SKKService : InputMethodService() {
                 if (mSandS) {
                     mSpacePressed = true
                 } else {
-                    processKey(' '.toInt())
+                    processKey(' '.code)
                 }
                 return true
             }
@@ -637,16 +715,17 @@ class SKKService : InputMethodService() {
 
     fun handleDpad(keyCode: Int): Boolean {
         if (mStickyShift) mShiftKey.useState()
-        if (mEngine.isRegistering) {
-            return true
-        } else if (mEngine.state === SKKChooseState) {
-            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-                mEngine.chooseAdjacentCandidate(false)
-            } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                mEngine.chooseAdjacentCandidate(true)
+        when {
+            mEngine.isRegistering -> { return true }
+            mEngine.state === SKKChooseState -> {
+                when (keyCode) {
+                    KeyEvent.KEYCODE_DPAD_LEFT -> mEngine.chooseAdjacentCandidate(false)
+                    KeyEvent.KEYCODE_DPAD_RIGHT -> mEngine.chooseAdjacentCandidate(true)
+                }
+                return true
             }
-            return true
-        } else if (mEngine.state.isTransient) { return true }
+            mEngine.state.isTransient -> { return true }
+        }
 
         return false
     }
@@ -686,11 +765,9 @@ class SKKService : InputMethodService() {
     }
 
     fun sendToMushroom() {
-        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val cs = cm.text
-        val clip = cs?.toString() ?: ""
-
-        val str = mEngine.prepareToMushroom(clip)
+        val clip = (getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager)
+                        .primaryClip?.getItemAt(0)?.coerceToText(this) ?: ""
+        val str = mEngine.prepareToMushroom(clip.toString())
 
         val mushroom = Intent(this, SKKMushroom::class.java)
         mushroom.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -719,7 +796,7 @@ class SKKService : InputMethodService() {
 
     fun setCandidates(list: List<String>?) {
         if (!isCandidatesViewShownFlag) {
-            if (mUseSoftKeyboard || SKKPrefs.getUseCandidatesView(this)) {
+            if (mUseSoftKeyboard || skkPrefs.useCandidatesView) {
                 setCandidatesViewShown(true)
             }
         }
@@ -775,10 +852,15 @@ class SKKService : InputMethodService() {
     }
 
     companion object {
-        internal const val ACTION_COMMIT_USERDIC = "io.github.deton.androidtutcode.ACTION_COMMIT_USERDIC"
-        internal const val ACTION_READ_PREFS = "io.github.deton.androidtutcode.ACTION_READ_PREFS"
-        internal const val ACTION_RELOAD_DICS = "io.github.deton.androidtutcode.ACTION_RELOAD_DICS"
-        internal const val ACTION_RELOAD_ROMAJIMAP = "io.github.deton.androidtutcode.ACTION_RELOAD_ROMAJIMAP"
+        internal const val ACTION_COMMAND = "io.github.deton.androidtutcode.ACTION_COMMAND"
+        internal const val KEY_COMMAND = "io.github.deton.androidtutcode.KEY_COMMAND"
+        internal const val COMMAND_COMMIT_USERDIC = "io.github.deton.androidtutcode.COMMAND_COMMIT_USERDIC"
+        internal const val COMMAND_READ_PREFS = "io.github.deton.androidtutcode.COMMAND_READ_PREFS"
+        internal const val COMMAND_RELOAD_DICS = "io.github.deton.androidtutcode.COMMAND_RELOAD_DICS"
+        internal const val COMMAND_RELOAD_ROMAJIMAP = "io.github.deton.androidtutcode.COMMAND_RELOAD_ROMAJIMAP"
+        internal const val DICT_ZIP_FILE = "skk_dict_btree_db.zip"
         internal const val FILENAME_ROMAJIMAP = "romajimap.txt"
+        private const val CHANNEL_ID = "tutcode_notification"
+        private const val CHANNEL_NAME = "TUTCode"
     }
 }

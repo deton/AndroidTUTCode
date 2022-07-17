@@ -22,7 +22,7 @@ object SKKKanjiState : SKKState {
         val hchr = context.romaji2kana(composing.toString())
         when (hchr) {
             null -> { // ローマ字シーケンス外の文字
-                if (pcode == ' '.toInt()) { // 変換開始
+                if (pcode == ' '.code) { // 変換開始
                     composing.setLength(0)
                     context.conversionStart(kanjiKey)
                     return

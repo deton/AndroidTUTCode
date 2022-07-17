@@ -11,10 +11,4 @@
 		android:layout_height="0dp"
 		android:layout_weight="1"
 		/>
-	<Button
-		android:id="@+id/dicManagerButton"
-		android:text="@string/label_dicmanager_add"
-		android:layout_height="wrap_content"
-		android:layout_width="wrap_content"
-		/>
 </LinearLayout>
