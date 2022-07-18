@@ -21,11 +21,12 @@ class SKKSettingsActivity : AppCompatActivity(),
                 result.data?.getStringExtra(FileChooser.KEY_FILEPATH)?.let { filepath ->
                     try {
                         // 一度読んでparseしてみて問題がないことを確認する
-                        val romajimap = File(filepath).useLines { lines ->
-                            lines.associate { line ->
-                                line.split("\t").let {
-                                    it[0] to it[1]
-                                }
+                        File(filepath).useLines { lines ->
+                            if (lines.any { it.split("\t").size < 2 }) {
+                                SimpleMessageDialogFragment.newInstance(
+                                    getString(R.string.error_romajimap)
+                                ).show(supportFragmentManager, "dialog")
+                                return@let
                             }
                         }
                         File(filepath).copyTo(

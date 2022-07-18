@@ -43,6 +43,7 @@
 	<string name="error_text_dic_coding">UTF-8のファイルではないようです</string>
 	<string name="error_dic_exists">この辞書はすでに存在します: %1$s</string>
 	<string name="error_extracting_dic_failed">変換辞書の解凍に失敗しました。一旦アンインストールしてみてください</string>
+	<string name="error_romajimap">漢字表ファイル読みこみ失敗。タブ区切りになっていない行があります</string>
 
 	<string translatable="false" name="prefkey_import_romajimap">PrefKeyImportRomajiMap</string>
 	<string translatable="false" name="prefkey_kutouten_type">PrefKeyKutoutenType</string>
