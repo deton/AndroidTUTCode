@@ -13,7 +13,7 @@ import android.content.pm.PackageManager.NameNotFoundException
 import android.os.Build
 
 internal class MyUncaughtExceptionHandler(val context: Context) : UncaughtExceptionHandler {
-    private val mDefaultUEH: UncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+    private val mDefaultUEH: UncaughtExceptionHandler? = Thread.getDefaultUncaughtExceptionHandler()
     private val mVersionName: String
 
     init {
@@ -35,7 +35,7 @@ internal class MyUncaughtExceptionHandler(val context: Context) : UncaughtExcept
             e.printStackTrace()
         }
 
-        mDefaultUEH.uncaughtException(th, t)
+        mDefaultUEH?.uncaughtException(th, t)
     }
 
     @Throws(FileNotFoundException::class)

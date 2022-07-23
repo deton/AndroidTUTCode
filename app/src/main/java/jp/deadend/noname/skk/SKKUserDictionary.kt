@@ -7,37 +7,17 @@ import jdbm.helper.StringComparator
 import jdbm.RecordManager
 import jdbm.RecordManagerFactory
 
-class SKKUserDictionary(mDicFile: String, btreeName: String): SKKDictionaryInterface {
-    override val mRecMan: RecordManager
-    override val mRecID: Long
+class SKKUserDictionary private constructor (
+    override val mRecMan: RecordManager,
+    override val mRecID: Long,
     override val mBTree: BTree
-    override var isValid = true
+): SKKDictionaryInterface {
     private var mOldKey: String = ""
     private var mOldValue: String = ""
 
     class Entry(val candidates: MutableList<String>, val okuri_blocks: MutableList<List<String>>)
 
-    init {
-        try {
-            mRecMan = RecordManagerFactory.createRecordManager(mDicFile)
-            mRecID = mRecMan.getNamedObject(btreeName)
-            if (mRecID == 0L) {
-                mBTree = BTree.createInstance(mRecMan, StringComparator())
-                mRecMan.setNamedObject(btreeName, mBTree.recid)
-                mRecMan.commit()
-                dlog("New user dictionary created")
-            } else {
-                mBTree = BTree.load(mRecMan, mRecID)
-            }
-        } catch (e: Exception) {
-            Log.e("SKK", "Error in opening the dictionary: $e")
-            isValid = false
-            throw RuntimeException(e)
-        }
-    }
-
     fun getEntry(key: String): Entry? {
-        if (!isValid) { return null }
         val cd = mutableListOf<String>()
         val okr = mutableListOf<List<String>>()
 
@@ -63,8 +43,13 @@ class SKKUserDictionary(mDicFile: String, btreeName: String): SKKDictionaryInter
         if (value.contains("[") && value.contains("]")) {
             // 送りがなブロック
             val regex = "\\[.*?\\]".toRegex()
-            regex.findAll(value).forEach {
-                okr.add(it.value.drop(1).dropLast(1).split('/').dropLastWhile { it.isEmpty() })
+            regex.findAll(value).forEach { result: MatchResult ->
+                okr.add(
+                    result.value.drop(1)
+                        .dropLast(1)
+                        .split('/')
+                        .dropLastWhile { it.isEmpty() }
+                )
             }
         }
 
@@ -72,8 +57,6 @@ class SKKUserDictionary(mDicFile: String, btreeName: String): SKKDictionaryInter
     }
 
     fun addEntry(key: String, value: String, okuri: String?) {
-        if (!isValid) return
-
         mOldKey = key
         val newVal = StringBuilder()
         val entry = getEntry(key)
@@ -126,7 +109,6 @@ class SKKUserDictionary(mDicFile: String, btreeName: String): SKKDictionaryInter
     }
 
     fun rollBack() {
-        if (!isValid) return
         if (mOldKey.isEmpty()) return
 
         try {
@@ -145,11 +127,31 @@ class SKKUserDictionary(mDicFile: String, btreeName: String): SKKDictionaryInter
     }
 
     fun commitChanges() {
-        if (!isValid) return
         try {
             mRecMan.commit()
         } catch (e: Exception) {
             throw RuntimeException(e)
+        }
+    }
+
+    companion object {
+        fun newInstance(mDicFile: String, btreeName: String): SKKUserDictionary? {
+            try {
+                val recman = RecordManagerFactory.createRecordManager(mDicFile)
+                val recid = recman.getNamedObject(btreeName)
+                if (recid == 0L) {
+                    val btree = BTree.createInstance(recman, StringComparator())
+                    recman.setNamedObject(btreeName, btree.recid)
+                    recman.commit()
+                    dlog("New user dictionary created")
+                    return SKKUserDictionary(recman, recid, btree)
+                } else {
+                    return SKKUserDictionary(recman, recid, BTree.load(recman, recid))
+                }
+            } catch (e: Exception) {
+                Log.e("SKK", "Error in opening the dictionary: $e")
+                return null
+            }
         }
     }
 }

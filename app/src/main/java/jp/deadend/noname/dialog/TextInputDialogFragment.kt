@@ -6,8 +6,6 @@ import androidx.fragment.app.DialogFragment
 import androidx.appcompat.app.AlertDialog
 import android.widget.EditText
 
-import jp.deadend.noname.skk.R
-
 class TextInputDialogFragment : DialogFragment() {
     private var mListener: Listener? = null
     private lateinit var mEditText: EditText
