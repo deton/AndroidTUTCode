@@ -90,6 +90,60 @@ object SKKKanjiState : SKKState {
             "@Kata-6" -> { // 後置型カタカナ置換。カタカナを伸ばす。連続するひらがな(6文字残す)
                 context.changeLastCharsToKatakana(-6)
             }
+            "@Maze1" -> { // 後置型交ぜ書き変換開始
+                composing.setLength(0) // 無視する。XXX:読みの長さを変更する?
+            }
+            "@Maze2" -> {
+                composing.setLength(0)
+            }
+            "@Maze3" -> {
+                composing.setLength(0)
+            }
+            "@Maze4" -> {
+                composing.setLength(0)
+            }
+            "@Maze5" -> {
+                composing.setLength(0)
+            }
+            "@Maze6" -> {
+                composing.setLength(0)
+            }
+            "@Maze7" -> {
+                composing.setLength(0)
+            }
+            "@Maze8" -> {
+                composing.setLength(0)
+            }
+            "@Maze9" -> {
+                composing.setLength(0)
+            }
+            "@MazeK1" -> { // 後置型交ぜ書き変換開始(活用する語)
+                composing.setLength(0) // 無視する。XXX:読みの長さを変更する?
+            }
+            "@MazeK2" -> {
+                composing.setLength(0)
+            }
+            "@MazeK3" -> {
+                composing.setLength(0)
+            }
+            "@MazeK4" -> {
+                composing.setLength(0)
+            }
+            "@MazeK5" -> {
+                composing.setLength(0)
+            }
+            "@MazeK6" -> {
+                composing.setLength(0)
+            }
+            "@MazeK7" -> {
+                composing.setLength(0)
+            }
+            "@MazeK8" -> {
+                composing.setLength(0)
+            }
+            "@MazeK9" -> {
+                composing.setLength(0)
+            }
             else -> { // ローマ字シーケンスに対応するかな/漢字があった→hchr
                 composing.setLength(0)
                 kanjiKey.append(hchr)
