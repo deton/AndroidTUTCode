@@ -384,6 +384,41 @@ class SKKEngine(
         }
     }
 
+    /**
+     * 後置型交ぜ書き置換を開始。
+     * @param nchars 読みの文字数
+     * @param isKatuyo 活用する語として変換を開始するかどうか
+     */
+    fun startPostMaze(nchars: Int, isKatuyo: Boolean) {
+        mComposing.setLength(0)
+        setComposingTextSKK("", 1)
+        var yomi: CharSequence
+        val firstEntry = mRegistrationStack.peekFirst()?.entry
+        if (firstEntry != null) {
+            yomi = firstEntry.takeLast(nchars)
+            if (yomi.length != nchars) {
+                return
+            }
+            firstEntry.setLength(firstEntry.length - nchars)
+        } else {
+            val ic = mService.currentInputConnection ?: return
+            yomi = ic.getTextBeforeCursor(nchars, 0) ?: return
+            if (yomi.length != nchars) {
+                return
+            }
+            ic.deleteSurroundingText(nchars, 0)
+        }
+        mKanjiKey.setLength(0)
+        mKanjiKey.append(yomi)
+        if (isKatuyo) {
+            // 交ぜ書き変換辞書に活用する語として登録されている読みで検索する
+            mKanjiKey.append("―")
+        }
+        changeState(SKKKanjiState)
+        setComposingTextSKK(mKanjiKey, 1)
+        conversionStart(mKanjiKey)
+    }
+
     // 後置型部首合成変換
     fun changeLastCharsByBushuConv() {
         fun bushuconv(cs: CharSequence, commitFunc: (kanji: String) -> Unit) {
@@ -406,8 +441,8 @@ class SKKEngine(
                 }
             }
             mKanjiKey.isEmpty() -> {
-		val firstEntry = mRegistrationStack.peekFirst()?.entry
-		if (firstEntry != null) {
+                val firstEntry = mRegistrationStack.peekFirst()?.entry
+                if (firstEntry != null) {
                     val cs = firstEntry.takeLast(2)
                     bushuconv(cs) { kanji ->
                         firstEntry.setLength(firstEntry.length - 2)

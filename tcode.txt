@@ -1,5 +1,13 @@
 fj	@maze
 77	@Bushu
+18	@Maze1
+28	@Maze2
+38	@Maze3
+48	@Maze4
+29	@MazeK2
+39	@MazeK3
+49	@MazeK4
+59	@MazeK5
 ,1	借
 .1	須
 p1	象

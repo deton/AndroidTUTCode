@@ -115,6 +115,60 @@ object SKKHiraganaState : SKKState {
                 context.setComposingTextSKK("", 1);
                 context.changeLastCharsToKatakana(-6)
             }
+            "@Maze1" -> { // 後置型交ぜ書き変換開始。読み1文字
+                context.startPostMaze(1, false)
+            }
+            "@Maze2" -> { // 後置型交ぜ書き変換開始。読み2文字
+                context.startPostMaze(2, false)
+            }
+            "@Maze3" -> { // 後置型交ぜ書き変換開始。読み3文字
+                context.startPostMaze(3, false)
+            }
+            "@Maze4" -> { // 後置型交ぜ書き変換開始。読み4文字
+                context.startPostMaze(4, false)
+            }
+            "@Maze5" -> { // 後置型交ぜ書き変換開始。読み5文字
+                context.startPostMaze(5, false)
+            }
+            "@Maze6" -> { // 後置型交ぜ書き変換開始。読み6文字
+                context.startPostMaze(6, false)
+            }
+            "@Maze7" -> { // 後置型交ぜ書き変換開始。読み7文字
+                context.startPostMaze(7, false)
+            }
+            "@Maze8" -> { // 後置型交ぜ書き変換開始。読み8文字
+                context.startPostMaze(8, false)
+            }
+            "@Maze9" -> { // 後置型交ぜ書き変換開始。読み9文字
+                context.startPostMaze(9, false)
+            }
+            "@MazeK1" -> { // 後置型交ぜ書き変換開始(活用する語)。読み1文字
+                context.startPostMaze(1, true)
+            }
+            "@MazeK2" -> { // 後置型交ぜ書き変換開始(活用する語)。読み2文字
+                context.startPostMaze(2, true)
+            }
+            "@MazeK3" -> { // 後置型交ぜ書き変換開始(活用する語)。読み3文字
+                context.startPostMaze(3, true)
+            }
+            "@MazeK4" -> { // 後置型交ぜ書き変換開始(活用する語)。読み4文字
+                context.startPostMaze(4, true)
+            }
+            "@MazeK5" -> { // 後置型交ぜ書き変換開始(活用する語)。読み5文字
+                context.startPostMaze(5, true)
+            }
+            "@MazeK6" -> { // 後置型交ぜ書き変換開始(活用する語)。読み6文字
+                context.startPostMaze(6, true)
+            }
+            "@MazeK7" -> { // 後置型交ぜ書き変換開始(活用する語)。読み7文字
+                context.startPostMaze(7, true)
+            }
+            "@MazeK8" -> { // 後置型交ぜ書き変換開始(活用する語)。読み8文字
+                context.startPostMaze(8, true)
+            }
+            "@MazeK9" -> { // 後置型交ぜ書き変換開始(活用する語)。読み9文字
+                context.startPostMaze(9, true)
+            }
             else -> commitFunc(context, hchr) // 確定できるものがあれば確定
         }
     }
