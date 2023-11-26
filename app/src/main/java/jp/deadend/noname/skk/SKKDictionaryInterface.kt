@@ -2,7 +2,6 @@ package jp.deadend.noname.skk
 
 import android.util.Log
 import java.io.BufferedReader
-import java.io.FileInputStream
 import java.io.IOException
 import java.io.InputStreamReader
 import java.nio.charset.Charset
@@ -11,6 +10,7 @@ import jdbm.RecordManager
 import jdbm.btree.BTree
 import jdbm.helper.Tuple
 import jdbm.helper.TupleBrowser
+import java.io.InputStream
 
 @Throws(IOException::class)
 private fun appendToEntry(key: String, value: String, btree: BTree) {
@@ -31,41 +31,31 @@ private fun appendToEntry(key: String, value: String, btree: BTree) {
 
 @Throws(IOException::class)
 internal fun loadFromTextDic(
-        file: String,
-        recMan: RecordManager,
-        btree: BTree,
-        overwrite: Boolean
+    inputStream: InputStream,
+    recMan: RecordManager,
+    btree: BTree,
+    overwrite: Boolean
 ) {
     val decoder = Charset.forName("UTF-8").newDecoder()
     decoder.onMalformedInput(CodingErrorAction.REPORT)
     decoder.onUnmappableCharacter(CodingErrorAction.REPORT)
-    val br = BufferedReader(InputStreamReader(FileInputStream(file), decoder))
 
-    var line: String?
-    var count = 0
+    BufferedReader(InputStreamReader(inputStream, decoder)).use { bufferedReader ->
+        var count = 0
+        bufferedReader.forEachLine { line ->
+            val idx = line.indexOf(' ')
+            if (idx != -1 && !line.startsWith(";;")) {
+                val key = line.substring(0, idx)
+                val value = line.substring(idx + 1, line.length)
+                if (overwrite) {
+                    btree.insert(key, value, true)
+                } else {
+                    appendToEntry(key, value, btree)
+                }
 
-    line = br.readLine()
-    while (line != null) {
-        if (line.startsWith(";;")) {
-            line = br.readLine()
-            continue
+                if (++count % 1000 == 0) { recMan.commit() }
+            }
         }
-
-        val idx = line.indexOf(' ')
-        if (idx == -1) {
-            line = br.readLine()
-            continue
-        }
-        val key = line.substring(0, idx)
-        val value = line.substring(idx + 1, line.length)
-        if (overwrite) {
-            btree.insert(key, value, true)
-        } else {
-            appendToEntry(key, value, btree)
-        }
-
-        if (++count % 1000 == 0) recMan.commit()
-        line = br.readLine()
     }
 
     recMan.commit()

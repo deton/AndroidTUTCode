@@ -22,8 +22,8 @@ class SetKeyPreference(context: Context, attrs: AttributeSet?) : DialogPreferenc
 
     override fun onGetDefaultValue(a: TypedArray, index: Int) = a.getInt(index, DEFAULT_VALUE)
 
-    override fun onSetInitialValue(restorePersistedValue: Boolean, defaultValue: Any?) {
-        value = if (restorePersistedValue) getPersistedInt(DEFAULT_VALUE) else defaultValue as Int
+    override fun onSetInitialValue(defaultValue: Any?) {
+        value = getPersistedInt(defaultValue as? Int ?: DEFAULT_VALUE)
     }
 
     companion object {

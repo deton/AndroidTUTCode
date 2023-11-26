@@ -1,14 +1,12 @@
 package jp.deadend.noname.skk
 
 import android.content.Context
-import android.inputmethodservice.Keyboard
-import android.inputmethodservice.KeyboardView
 import android.view.KeyEvent
 import android.util.AttributeSet
 
 class AbbrevKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener {
     private lateinit var mService: SKKService
-    private val mKeyboard = SKKKeyboard(context, R.xml.abbrev, 5)
+    private val mKeyboard = Keyboard(context, R.xml.abbrev)
 
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
     constructor(context: Context, attrs: AttributeSet?, defStyle: Int) : super(context, attrs, defStyle)
@@ -27,11 +25,7 @@ class AbbrevKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener {
         mService = listener
     }
 
-    fun changeKeyHeight(px: Int) {
-        mKeyboard.changeKeyHeight(px)
-    }
-
-    override fun onKey(primaryCode: Int, keyCodes: IntArray) {
+    override fun onKey(primaryCode: Int) {
         when (primaryCode) {
             Keyboard.KEYCODE_SHIFT -> isShifted = !isShifted
             Keyboard.KEYCODE_DELETE -> {

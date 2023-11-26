@@ -1,36 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Keyboard xmlns:android="http://schemas.android.com/apk/res/android"
-	android:keyWidth="20%p"
-	android:horizontalGap="0dip"
-	android:verticalGap="0dip"
-	android:keyHeight="1px"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	app:keyWidth="20%p"
+	app:horizontalGap="0dip"
+	app:verticalGap="0dip"
+	app:keyHeight="8%p"
 	>
 	<Row>
-		<Key android:codes="-1" android:keyIcon="@drawable/sym_keyboard_shift" android:isSticky="true" />
-		<Key android:codes="-201" android:keyLabel="あ" />
-		<Key android:codes="-202" android:keyLabel="か" />
-		<Key android:codes="-203" android:keyLabel="さ" />
-		<Key android:codes="-5" android:keyIcon="@drawable/sym_keyboard_delete" android:isRepeatable="true" />
+		<Key app:codes="-1" app:keyIcon="@drawable/ic_keyboard_shift" app:isSticky="true" />
+		<Key app:codes="-201" app:keyLabel="あ" />
+		<Key app:codes="-202" app:keyLabel="か" />
+		<Key app:codes="-203" app:keyLabel="さ" />
+		<Key app:codes="-5" app:keyIcon="@drawable/ic_keyboard_backspace" app:isRepeatable="true" />
 	</Row>
 	<Row>
-		<Key android:codes="-1001" android:keyLabel="←" android:isRepeatable="true" />
-		<Key android:codes="-204" android:keyLabel="た" />
-		<Key android:codes="-205" android:keyLabel="な" />
-		<Key android:codes="-206" android:keyLabel="は" />
-		<Key android:codes="-1002" android:keyLabel="→" android:isRepeatable="true" />
+		<Key app:codes="-1001" app:keyIcon="@drawable/ic_keyboard_arrow_left" app:isRepeatable="true" />
+		<Key app:codes="-204" app:keyLabel="た" />
+		<Key app:codes="-205" app:keyLabel="な" />
+		<Key app:codes="-206" app:keyLabel="は" />
+		<Key app:codes="-1002" app:keyIcon="@drawable/ic_keyboard_arrow_right" app:isRepeatable="true" />
 	</Row>
 	<Row>
-		<Key android:codes="-1005" android:keyLabel="カナ" />
-		<Key android:codes="-207" android:keyLabel="ま" />
-		<Key android:codes="-208" android:keyLabel="や" />
-		<Key android:codes="-209" android:keyLabel="ら" />
-		<Key android:codes="-1004" android:keyIcon="@drawable/sym_keyboard_space" />
+		<Key app:codes="-1005" app:keyLabel="カナ" />
+		<Key app:codes="-207" app:keyLabel="ま" />
+		<Key app:codes="-208" app:keyLabel="や" />
+		<Key app:codes="-209" app:keyLabel="ら" />
+		<Key app:codes="-1004" app:keyIcon="@drawable/ic_keyboard_spacebar" />
 	</Row>
-	<Row android:rowEdgeFlags="bottom">
-		<Key android:codes="-1003" android:keyLabel="ABC" />
-		<Key android:codes="-1006" android:keyLabel="小 ゛゜" />
-		<Key android:codes="-210" android:keyLabel="わ" />
-		<Key android:codes="-211" android:keyLabel="、。？！" />
-		<Key android:codes="-1007" android:keyIcon="@drawable/sym_keyboard_return" />
+	<Row app:rowEdgeFlags="bottom">
+		<Key app:codes="-1003" app:keyLabel="ABC" />
+		<Key app:codes="-1006" app:keyLabel="小 ゛゜" />
+		<Key app:codes="-210" app:keyLabel="わ" />
+		<Key app:codes="-211" app:keyLabel="、。？！" />
+		<Key app:codes="-1007" app:keyIcon="@drawable/ic_keyboard_return" />
 	</Row>
 </Keyboard>

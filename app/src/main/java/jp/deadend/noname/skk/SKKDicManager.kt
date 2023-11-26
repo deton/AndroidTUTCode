@@ -1,8 +1,8 @@
 package jp.deadend.noname.skk
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatActivity
@@ -11,9 +11,7 @@ import android.view.*
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import java.io.File
 import java.io.IOException
 import java.nio.charset.CharacterCodingException
 import jdbm.RecordManager
@@ -31,12 +29,10 @@ class SKKDicManager : AppCompatActivity() {
     private val mDics = mutableListOf<Tuple>()
     private var isModified = false
 
-    private val addDicFileActivity =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result : ActivityResult ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                result.data?.getStringExtra(FileChooser.KEY_FILEPATH)?.let { addDic(it) }
-            }
-        }
+    private val addDicFileLauncher = registerForActivityResult(
+                                        ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) { addDic(uri) }
+    }
 
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,13 +107,7 @@ class SKKDicManager : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> finish()
             R.id.menu_dic_manager_add -> {
-                val externalStorageDir = getExternalFilesDir(null)
-                if (externalStorageDir != null) {
-                    val intent = Intent(this@SKKDicManager, FileChooser::class.java)
-                    intent.putExtra(FileChooser.KEY_MODE, FileChooser.MODE_OPEN)
-                    intent.putExtra(FileChooser.KEY_DIRNAME, externalStorageDir.path)
-                    addDicFileActivity.launch(intent)
-                }
+                addDicFileLauncher.launch(arrayOf("*/*"))
             }
             R.id.menu_dic_manager_reset -> {
                 val dialog = ConfirmationDialogFragment.newInstance(
@@ -151,8 +141,8 @@ class SKKDicManager : AppCompatActivity() {
         return true
     }
 
-    private fun addDic(filePath: String) {
-        val dicFileBaseName = loadDic(filePath)
+    private fun addDic(uri: Uri) {
+        val dicFileBaseName = loadDic(uri)
         if (dicFileBaseName != null) {
             val dialog = TextInputDialogFragment.newInstance(getString(R.string.label_dicmanager_input_name))
             dialog.setSingleLine(true)
@@ -185,9 +175,15 @@ class SKKDicManager : AppCompatActivity() {
         }
     }
 
-    private fun loadDic(filePath: String): String? {
-        val file = File(filePath)
-        val name = file.name
+    private fun loadDic(uri: Uri): String? {
+        val name = getFileNameFromUri(this, uri)
+        if (name == null) {
+            SimpleMessageDialogFragment.newInstance(
+                getString(R.string.error_open_dicfile)
+            ).show(supportFragmentManager, "dialog")
+            return null
+        }
+
         val dicFileBaseName = if (name.startsWith("SKK-JISYO.")) {
             "skk_dict_" + name.substring(10)
         } else {
@@ -217,7 +213,10 @@ class SKKDicManager : AppCompatActivity() {
             val btree = BTree.createInstance(recMan, StringComparator())
             recMan.setNamedObject(getString(R.string.btree_name), btree.recid)
             recMan.commit()
-            loadFromTextDic(filePath, recMan, btree, true)
+
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                loadFromTextDic(inputStream, recMan, btree, false)
+            }
         } catch (e: IOException) {
             if (e is CharacterCodingException) {
                 SimpleMessageDialogFragment.newInstance(
@@ -225,7 +224,7 @@ class SKKDicManager : AppCompatActivity() {
                 ).show(supportFragmentManager, "dialog")
             } else {
                 SimpleMessageDialogFragment.newInstance(
-                    getString(R.string.error_file_load, filePath)
+                    getString(R.string.error_file_load, name)
                 ).show(supportFragmentManager, "dialog")
             }
             Log.e("SKK", "SKKDicManager#loadDic() Error: $e")

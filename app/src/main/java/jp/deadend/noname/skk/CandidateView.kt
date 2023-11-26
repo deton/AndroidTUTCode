@@ -25,6 +25,7 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.core.content.res.ResourcesCompat
+import kotlin.math.min
 
 /**
  * Construct a CandidateView for showing suggested words for completion.
@@ -307,7 +308,7 @@ class CandidateView(context: Context, attrs: AttributeSet) : View(context, attrs
         val rightEdge = mScrollX + width
         while (i < count) {
             if (mWordX[i] <= rightEdge && mWordX[i] + mWordWidth[i] >= rightEdge) {
-                targetX = Math.min(mWordX[i], mTotalWidth - width)
+                targetX = min(mWordX[i], mTotalWidth - width)
                 break
             }
             i++

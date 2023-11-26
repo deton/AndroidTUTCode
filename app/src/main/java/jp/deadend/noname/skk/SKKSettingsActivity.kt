@@ -2,6 +2,7 @@ package jp.deadend.noname.skk
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.result.ActivityResult
@@ -11,36 +12,39 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import java.io.*
 import jp.deadend.noname.dialog.SimpleMessageDialogFragment
+import java.nio.file.Files
 
 class SKKSettingsActivity : AppCompatActivity(),
     PreferenceFragmentCompat.OnPreferenceStartFragmentCallback, Preference.OnPreferenceClickListener {
 
-    private val loadFileActivity =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                result.data?.getStringExtra(FileChooser.KEY_FILEPATH)?.let { filepath ->
-                    try {
+    private val loadFileLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) {
+                try {
+                    contentResolver.openInputStream(uri)?.use { inputStream ->
                         // 一度読んでparseしてみて問題がないことを確認する
-                        File(filepath).useLines { lines ->
+                        inputStream.bufferedReader().useLines { lines ->
                             if (lines.any { it.split("\t").size < 2 }) {
                                 SimpleMessageDialogFragment.newInstance(
                                     getString(R.string.error_romajimap)
                                 ).show(supportFragmentManager, "dialog")
-                                return@let
+                                return@use
                             }
                         }
-                        File(filepath).copyTo(
-                            File(filesDir, SKKService.FILENAME_ROMAJIMAP),
-                            overwrite = true
-                        )
-                        val intent = Intent(SKKService.ACTION_COMMAND)
-                        intent.putExtra(SKKService.KEY_COMMAND, SKKService.COMMAND_RELOAD_ROMAJIMAP)
-                        sendBroadcast(intent)
-                    } catch (e: IOException) {
-                        SimpleMessageDialogFragment.newInstance(
-                            getString(R.string.error_file_load, filepath)
-                        ).show(supportFragmentManager, "dialog")
                     }
+                    contentResolver.openInputStream(uri)?.use { inputStream ->
+                        val file = File(filesDir, SKKService.FILENAME_ROMAJIMAP)
+                        file.outputStream().use { output ->
+                            inputStream.copyTo(output)
+                        }
+                    }
+                    val intent = Intent(SKKService.ACTION_COMMAND)
+                    intent.putExtra(SKKService.KEY_COMMAND, SKKService.COMMAND_RELOAD_ROMAJIMAP)
+                    sendBroadcast(intent)
+                } catch (e: IOException) {
+                    SimpleMessageDialogFragment.newInstance(
+                        getString(R.string.error_file_load, uri)
+                    ).show(supportFragmentManager, "dialog")
                 }
             }
         }
@@ -103,7 +107,7 @@ class SKKSettingsActivity : AppCompatActivity(),
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                onBackPressed()
+                onBackPressedDispatcher.onBackPressed()
                 if (supportFragmentManager.backStackEntryCount == 0) {
                     setTitle(R.string.label_pref_activity)
                 }
@@ -123,9 +127,7 @@ class SKKSettingsActivity : AppCompatActivity(),
     }
 
     override fun onPreferenceClick(preference: Preference): Boolean {
-        val intent = Intent(this@SKKSettingsActivity, FileChooser::class.java)
-        intent.putExtra(FileChooser.KEY_MODE, FileChooser.MODE_OPEN)
-        loadFileActivity.launch(intent)
+        loadFileLauncher.launch(arrayOf("*/*"))
         return true
     }
 }

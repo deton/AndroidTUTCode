@@ -35,7 +35,7 @@ local.properties
 .DS_Store
 /build
 /captures
-/app/release/output.json
+/app/release
 .externalNativeBuild
 
 /svg

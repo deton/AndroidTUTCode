@@ -1,8 +1,6 @@
 package jp.deadend.noname.skk
 
 import android.content.Context
-import android.inputmethodservice.Keyboard
-import android.inputmethodservice.KeyboardView
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.util.AttributeSet
@@ -10,9 +8,9 @@ import android.util.AttributeSet
 class QwertyKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener {
     private lateinit var mService: SKKService
 
-    private val mLatinKeyboard = SKKKeyboard(context, R.xml.qwerty, 4)
-    private val mSymbolsKeyboard = SKKKeyboard(context, R.xml.symbols, 4)
-    private val mSymbolsShiftedKeyboard = SKKKeyboard(context, R.xml.symbols_shift, 4)
+    private val mLatinKeyboard = Keyboard(context, R.xml.qwerty)
+    private val mSymbolsKeyboard = Keyboard(context, R.xml.symbols)
+    private val mSymbolsShiftedKeyboard = Keyboard(context, R.xml.symbols_shift)
 
     private var mFlickSensitivitySquared = 100
     private var mFlickStartX = -1f
@@ -34,12 +32,6 @@ class QwertyKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener {
 
     fun setService(listener: SKKService) {
         mService = listener
-    }
-
-    fun changeKeyHeight(px: Int) {
-        mLatinKeyboard.changeKeyHeight(px)
-        mSymbolsKeyboard.changeKeyHeight(px)
-        mSymbolsShiftedKeyboard.changeKeyHeight(px)
     }
 
     fun setFlickSensitivity(sensitivity: Int) {
@@ -79,7 +71,7 @@ class QwertyKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener {
         return super.onTouchEvent(event)
     }
 
-    override fun onKey(primaryCode: Int, keyCodes: IntArray) {
+    override fun onKey(primaryCode: Int) {
         when (primaryCode) {
             Keyboard.KEYCODE_DELETE -> {
                 if (!mService.handleBackspace()) mService.keyDownUp(KeyEvent.KEYCODE_DEL)

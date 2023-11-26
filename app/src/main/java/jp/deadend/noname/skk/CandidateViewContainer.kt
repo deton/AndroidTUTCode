@@ -43,6 +43,14 @@ class CandidateViewContainer(screen: Context, attrs: AttributeSet) : LinearLayou
         }
     }
 
+    fun setAlpha(alpha: Int) {
+        background.alpha = alpha
+        binding.candidateLeft.alpha = alpha / 255f
+        binding.candidateRight.alpha = alpha / 255f
+        binding.candidateLeft.background.alpha = alpha
+        binding.candidateRight.background.alpha = alpha
+    }
+
     fun setScrollButtonsEnabled(left: Boolean, right: Boolean) {
         binding.candidateLeft.isEnabled = left
         binding.candidateRight.isEnabled = right

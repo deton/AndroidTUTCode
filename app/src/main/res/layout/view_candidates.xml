@@ -28,7 +28,7 @@
 	<ImageButton
 		android:id="@+id/candidate_left"
 		android:background="@drawable/ic_suggest_scroll_background"
-		android:src="@drawable/ic_suggest_strip_scroll_left_arrow"
+		android:src="@drawable/ic_arrow_left"
 		android:layout_width="@dimen/candidates_scrollbutton_width"
 		android:layout_height="fill_parent"
 		android:clickable="true"
@@ -42,7 +42,7 @@
 	<ImageButton
 		android:id="@+id/candidate_right"
 		android:background="@drawable/ic_suggest_scroll_background"
-		android:src="@drawable/ic_suggest_strip_scroll_right_arrow"
+		android:src="@drawable/ic_arrow_right"
 		android:layout_width="@dimen/candidates_scrollbutton_width"
 		android:layout_height="fill_parent"
 		android:clickable="true"
