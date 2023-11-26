@@ -44,6 +44,16 @@
         app:defaultValue="false"
         app:iconSpaceReserved="false"
         />
+<!--    <androidx.preference.SeekBarPreference-->
+<!--        app:key="@string/prefkey_background_alpha"-->
+<!--        app:title="背景の透明化"-->
+<!--        app:summary="0で完全に透明になります"-->
+<!--        app:defaultValue="100"-->
+<!--        app:min="0"-->
+<!--        android:max="100"-->
+<!--        app:showSeekBarValue="true"-->
+<!--        app:iconSpaceReserved="false"-->
+<!--        />-->
     <androidx.preference.SeekBarPreference
         app:key="@string/prefkey_key_height_port"
         app:title="キーボードの高さ（縦画面）"

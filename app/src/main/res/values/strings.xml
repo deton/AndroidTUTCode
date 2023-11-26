@@ -35,8 +35,9 @@
 	<string name="message_main_dic">これは基本の変換辞書なので、削除できません</string>
 
 	<string name="error_dic">辞書ファイルを開けません。設定画面から、辞書を初期化してみてください</string>
+	<string name="error_open_dicfile">辞書ファイルを開けません</string>
 	<string name="error_user_dic">ユーザー辞書が開けません。設定画面から、ユーザー辞書を初期化してみてください</string>
-	<string name="error_open_user_dic">ユーザー辞書を開くときにエラーが発生しました。テキスト形式保存を試みた後、初期化してもよろしいですか？</string>
+	<string name="error_open_user_dic">ユーザー辞書を開くときにエラーが発生しました。初期化してもよろしいですか？</string>
 	<string name="error_file_load">ファイル読みこみに失敗しました: %1$s</string>
 	<string name="error_no_mushroom">マッシュルームアプリがひとつもインストールされていません</string>
 	<string name="error_write_to_external_storage">テキスト形式の保存に失敗しました</string>
@@ -62,6 +63,7 @@
 	<string translatable="false" name="prefkey_key_width_port">PrefKeyKeyWidthPort</string>
 	<string translatable="false" name="prefkey_key_width_land">PrefKeyKeyWidthLand</string>
 	<string translatable="false" name="prefkey_key_position">PrefKeyKeyPosition</string>
+	<string translatable="false" name="prefkey_background_alpha">PrefKeyBackgroundAlpha</string>
 	<string translatable="false" name="prefkey_sticky_meta">PrefKeyStickyMeta</string>
 	<string translatable="false" name="prefkey_sands">PrefKeySandS</string>
 	<string translatable="false" name="prefkey_optional_dics">PrefKeyOptionalDics</string>

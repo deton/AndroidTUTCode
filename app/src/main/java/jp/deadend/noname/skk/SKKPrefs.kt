@@ -59,6 +59,10 @@ class SKKPrefs(context: Context) {
         get() = prefs.getBoolean(res.getString(R.string.prefkey_use_soft_cancel_key), false)
         set(value) = prefs.edit().putBoolean(res.getString(R.string.prefkey_use_soft_cancel_key), value).apply()
 
+    var backgroundAlpha: Int
+        get() = prefs.getInt(res.getString(R.string.prefkey_background_alpha), 100)
+        set(value) = prefs.edit().putInt(res.getString(R.string.prefkey_background_alpha), value).apply()
+
     var keyHeightPort: Int
         get() = prefs.getInt(res.getString(R.string.prefkey_key_height_port), 30)
         set(value) = prefs.edit().putInt(res.getString(R.string.prefkey_key_height_port), value).apply()

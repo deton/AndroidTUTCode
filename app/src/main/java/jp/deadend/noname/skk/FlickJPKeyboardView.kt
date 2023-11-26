@@ -1,8 +1,6 @@
 package jp.deadend.noname.skk
 
 import android.content.Context
-import android.inputmethodservice.Keyboard
-import android.inputmethodservice.KeyboardView
 import android.text.ClipboardManager
 import android.util.AttributeSet
 import android.view.KeyEvent
@@ -11,9 +9,6 @@ import android.util.SparseArray
 import android.view.LayoutInflater
 import android.widget.PopupWindow
 import android.content.Context.CLIPBOARD_SERVICE
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.drawable.ShapeDrawable
 import android.widget.TextView
 import jp.deadend.noname.skk.databinding.PopupFlickguideBinding
 import jp.deadend.noname.skk.engine.SKKEngine
@@ -39,17 +34,13 @@ class FlickJPKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener 
     private val mPopupOffset = intArrayOf(0, 0)
     private val mFixedPopupPos = intArrayOf(0, 0)
 
-    private val mJPKeyboard: SKKKeyboard
-    private val mNumKeyboard: SKKKeyboard
-    private val mVoiceKeyboard: SKKKeyboard
+    private val mJPKeyboard: Keyboard
+    private val mNumKeyboard: Keyboard
+    private val mVoiceKeyboard: Keyboard
 
     private var mKutoutenLabel = "，．？！"
     private val mKutoutenKey: Keyboard.Key
     private val mQwertyKey: Keyboard.Key
-
-    private var mHighlightedKey: Keyboard.Key? = null
-    private val mHighlightedDrawable =
-            ShapeDrawable().apply { paint.color = Color.parseColor("#66FF0000") }
 
     //フリックガイドTextView用
     private val mFlickGuideLabelList = SparseArray<Array<String>>()
@@ -78,11 +69,11 @@ class FlickJPKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener 
         isPreviewEnabled = false
         setBackgroundColor(0x00000000)
 
-        mJPKeyboard = SKKKeyboard(context, R.xml.keys_flick_jp, 4)
+        mJPKeyboard = Keyboard(context, R.xml.keys_flick_jp)
         mKutoutenKey = checkNotNull(findKeyByCode(mJPKeyboard, KEYCODE_FLICK_JP_CHAR_TEN)) { "BUG: no kutoten key" }
         mQwertyKey = checkNotNull(findKeyByCode(mJPKeyboard, KEYCODE_FLICK_JP_TOQWERTY)) { "BUG: no qwerty key" }
-        mNumKeyboard = SKKKeyboard(context, R.xml.keys_flick_number, 4)
-        mVoiceKeyboard = SKKKeyboard(context, R.xml.keys_flick_voice, 4)
+        mNumKeyboard = Keyboard(context, R.xml.keys_flick_number)
+        mVoiceKeyboard = Keyboard(context, R.xml.keys_flick_voice)
         keyboard = mJPKeyboard
     }
 
@@ -91,29 +82,12 @@ class FlickJPKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener 
         isPreviewEnabled = false
         setBackgroundColor(0x00000000)
 
-        mJPKeyboard = SKKKeyboard(context, R.xml.keys_flick_jp, 4)
+        mJPKeyboard = Keyboard(context, R.xml.keys_flick_jp)
         mKutoutenKey = checkNotNull(findKeyByCode(mJPKeyboard, KEYCODE_FLICK_JP_CHAR_TEN)) { "BUG: no kutoten key" }
         mQwertyKey = checkNotNull(findKeyByCode(mJPKeyboard, KEYCODE_FLICK_JP_TOQWERTY)) { "BUG: no qwerty key" }
-        mNumKeyboard = SKKKeyboard(context, R.xml.keys_flick_number, 4)
-        mVoiceKeyboard = SKKKeyboard(context, R.xml.keys_flick_voice, 4)
+        mNumKeyboard = Keyboard(context, R.xml.keys_flick_number)
+        mVoiceKeyboard = Keyboard(context, R.xml.keys_flick_voice)
         keyboard = mJPKeyboard
-    }
-
-    override fun onDraw(canvas: Canvas?) {
-        super.onDraw(canvas)
-        val key = mHighlightedKey
-        if (key != null && canvas != null) {
-            mHighlightedDrawable.apply {
-                setBounds(key.x, key.y, key.x + key.width, key.y + key.height)
-                draw(canvas)
-            }
-        }
-    }
-
-    fun setHighlightedKey(index: Int) {
-        val keys = keyboard.keys
-        mHighlightedKey = if (index in 0 until keys.size) keys[index] else null
-        invalidateAllKeys()
     }
 
     fun setService(listener: SKKService) {
@@ -190,53 +164,26 @@ class FlickJPKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener 
             var key = findKeyByCode(mJPKeyboard, KEYCODE_FLICK_JP_PASTE)
             if (key != null) {
                 key.codes[0] = KEYCODE_FLICK_JP_LEFT
-                key.label = "←"
+                key.label = ""
             }
             key = findKeyByCode(mJPKeyboard, KEYCODE_FLICK_JP_RIGHT)
             if (key != null) {
-                key.label = "→"
+                key.label = ""
             }
         }
         invalidateAllKeys()
     }
 
-    private fun adjustKeysHorizontally(
-            keyboard: SKKKeyboard,
-            maxKeyWidth: Int,
-            ratio: Double,
-            position: String
-    ) {
-        var y = 0
-        var colNo = 0
-        val newWidth = (maxKeyWidth * ratio).toInt()
-        val gap = when (position) {
-            "right" -> (maxKeyWidth - newWidth) * 5
-            "center" -> ((maxKeyWidth - newWidth) * 2.5).toInt()
-            else -> 0
-        }
-        for (key in keyboard.keys) {
-            key.width = newWidth
-            if (key.y != y) {
-                y = key.y
-                colNo = 0
-            }
-            key.x = gap + key.width * colNo
-            colNo++
-        }
-    }
-
-    // widthはパーセントでheightはpxなので注意
+    // width・height両方ともパーセント
     internal fun prepareNewKeyboard(context: Context, width: Int, height: Int, position: String) {
-        val keyWidth = mJPKeyboard.keys[0].width
-        adjustKeysHorizontally(mJPKeyboard, keyWidth, width.toDouble() / 100, position)
-        mJPKeyboard.changeKeyHeight(height)
+        mJPKeyboard.resizeByPercentageOfScreen(width, height)
+        mJPKeyboard.setLeftOffset(position)
+        mNumKeyboard.resizeByPercentageOfScreen(width, height)
+        mNumKeyboard.setLeftOffset(position)
+        mVoiceKeyboard.resizeByPercentageOfScreen(width, height)
+        mVoiceKeyboard.setLeftOffset(position)
         keyboard = mJPKeyboard
-
-        adjustKeysHorizontally(mNumKeyboard, keyWidth, width.toDouble() / 100, position)
-        mNumKeyboard.changeKeyHeight(height)
-
-        adjustKeysHorizontally(mVoiceKeyboard, keyWidth, width.toDouble() / 100, position)
-        mVoiceKeyboard.changeKeyHeight(height)
+        invalidateAllKeys()
 
         readPrefs(context)
     }
@@ -752,7 +699,7 @@ class FlickJPKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener 
         mFixedPopupPos[1] = windowLocation[1] - size / 2 + mPopupOffset[1]
     }
 
-    override fun onKey(primaryCode: Int, keyCodes: IntArray) {
+    override fun onKey(primaryCode: Int) {
         when (primaryCode) {
             Keyboard.KEYCODE_SHIFT -> {
                 isShifted = !isShifted

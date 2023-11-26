@@ -21,18 +21,15 @@ class SKKSpeechRecognitionResultsList : AppCompatActivity() {
         binding.listView.emptyView = binding.emptyView
         binding.listView.adapter = ArrayAdapter(this, R.layout.listitem_text_row, mResults)
         binding.listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            val retIntent = Intent(ACTION_BROADCAST)
-            retIntent.addCategory(CATEGORY_BROADCAST)
-            retIntent.putExtra(SKKMushroom.REPLACE_KEY, mResults[position])
+            val retIntent = Intent(SKKService.ACTION_COMMAND)
+            retIntent.putExtra(SKKService.KEY_COMMAND, SKKService.COMMAND_SPEECH_RECOGNITION)
+            retIntent.putExtra(RESULTS_KEY, mResults[position])
             sendBroadcast(retIntent)
             finish()
         }
     }
 
     companion object {
-        const val ACTION_BROADCAST = "jp.deadend.noname.skk.MUSHROOM_RESULT"
-        const val CATEGORY_BROADCAST = "jp.deadend.noname.skk.MUSHROOM_VALUE"
-
         const val RESULTS_KEY = "speech_recognition_results_key"
     }
 }

@@ -4,6 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/AndroidSKK.iml" filepath="$PROJECT_DIR$/AndroidSKK.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/AndroidSKK.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/AndroidSKK.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/AndroidSKK.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/AndroidSKK.app.androidTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/AndroidSKK.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/AndroidSKK.app.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/AndroidSKK.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/AndroidSKK.app.unitTest.iml" />
     </modules>
   </component>
 </project>
