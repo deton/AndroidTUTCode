@@ -2,14 +2,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 33
 
     defaultConfig {
         applicationId "io.github.deton.androidtutcode"
-        minSdkVersion 14
-        targetSdkVersion 30
-        versionCode 5
-        versionName "1.2.0"
+        minSdkVersion 21
+        targetSdkVersion 33
+        versionCode 6
+        versionName "1.3.0"
     }
 
     buildTypes {
@@ -24,12 +24,13 @@ android {
     lint {
         abortOnError false
     }
+    namespace 'jp.deadend.noname.skk'
 }
 
 dependencies {
     implementation files('libs/jdbm-1.0.jar')
 /*    implementation 'androidx.legacy:legacy-support-v4:1.0.0-beta01' */
-    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.preference:preference-ktx:1.2.0'
 }
 repositories {

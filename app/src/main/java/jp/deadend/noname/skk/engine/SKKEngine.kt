@@ -708,14 +708,16 @@ class SKKEngine(
         if (list2 != null) {
             var idx = 0
             for (s in list2) {
-                if (mOkurigana != null) {
-                    if (entry.okuri_blocks.all { it[0] != mOkurigana || !it.contains(s) }) continue
-                    //送りがなブロックに見つからなければ，追加しない
+                when {
+                    mOkurigana == null
+                     || entry.okuri_blocks.any { it.first == mOkurigana && it.second == s } -> {
+                        //個人辞書の候補を先頭に追加
+                        list1.remove(s)
+                        list1.add(idx, s)
+                        idx++
+                    }
+                    !list1.contains(s) -> { list1.add(s) } //送りがなブロックにマッチしない場合も、無ければ最後に追加
                 }
-                //個人辞書の候補を先頭に追加
-                list1.remove(s)
-                list1.add(idx, s)
-                idx++
             }
         }
 

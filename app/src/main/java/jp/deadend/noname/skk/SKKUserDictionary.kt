@@ -15,11 +15,11 @@ class SKKUserDictionary private constructor (
     private var mOldKey: String = ""
     private var mOldValue: String = ""
 
-    class Entry(val candidates: MutableList<String>, val okuri_blocks: MutableList<List<String>>)
+    class Entry(val candidates: MutableList<String>, val okuri_blocks: MutableList<Pair<String, String>>)
 
     fun getEntry(key: String): Entry? {
         val cd = mutableListOf<String>()
-        val okr = mutableListOf<List<String>>()
+        val okr = mutableListOf<Pair<String, String>>()
 
         val value: String?
         try {
@@ -30,25 +30,23 @@ class SKKUserDictionary private constructor (
 
         if (value == null) { return null }
 
-        val valArray = value.substring(1).split("/").dropLastWhile { it.isEmpty() }
-        // 先頭のスラッシュをとってから分割
-        if (valArray.isEmpty()) {
+        val valList = value.substring(1, value.length - 1).split("/")  // 先頭と最後のスラッシュをとってから分割
+        if (valList.isEmpty()) {
             Log.e("SKK", "Invalid value found: Key=$key value=$value")
             return null
         }
 
         // 送りがなブロック以外の部分を追加
-        valArray.takeWhile { !it.startsWith("[") }.forEach { cd.add(it) }
+        valList.takeWhile { !it.startsWith("[") }.forEach { cd.add(it) }
 
         if (value.contains("[") && value.contains("]")) {
             // 送りがなブロック
-            val regex = "\\[.*?\\]".toRegex()
+            val regex = """\[.*?\]""".toRegex()
             regex.findAll(value).forEach { result: MatchResult ->
                 okr.add(
-                    result.value.drop(1)
-                        .dropLast(1)
+                    result.value.substring(1, result.value.length - 2) // "[" と "/]" をとる
                         .split('/')
-                        .dropLastWhile { it.isEmpty() }
+                        .let { Pair(it[0], it[1]) }
                 )
             }
         }
@@ -70,27 +68,22 @@ class SKKUserDictionary private constructor (
             cands.remove(value)
             cands.add(0, value)
 
-            val okrs = mutableListOf<List<String>>()
+            val okrs = mutableListOf<Pair<String, String>>()
             if (okuri != null) {
-                entry.okuri_blocks.forEach { lst ->
-                    if (lst[0] == okuri) {
-                        if (!lst.contains(value)) {
-                            okrs.add(lst + value)
-                        } else {
-                            okrs.add(lst)
-                        }
+                var matched = false
+                for (pair in entry.okuri_blocks) {
+                    if (pair.first == okuri && pair.second == value) {
+                        okrs.add(0, pair)
+                        matched = true
                     } else {
-                        okrs.add(listOf(okuri, value))
+                        okrs.add(pair)
                     }
                 }
+                if (!matched) { okrs.add(Pair(okuri, value)) }
             }
 
             for (str in cands) { newVal.append("/", str) }
-            for (lst in okrs) {
-                newVal.append("/[")
-                for (str in lst) { newVal.append(str, "/") }
-                newVal.append("]")
-            }
+            for (pair in okrs) { newVal.append("/[", pair.first, "/", pair.second, "/]") }
             newVal.append("/")
 
             try {

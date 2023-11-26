@@ -1,6 +1,5 @@
 package jp.deadend.noname.skk
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -13,11 +12,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import java.io.BufferedWriter
-import java.io.File
-import java.io.FileWriter
 import java.io.IOException
 import java.nio.charset.CharacterCodingException
 import jdbm.RecordManager
@@ -36,30 +31,56 @@ class SKKUserDicTool : AppCompatActivity() {
     private var mEntryList = mutableListOf<Tuple>()
     private lateinit var mAdapter: EntryAdapter
 
-    private val importFileActivity =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result : ActivityResult ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                openUserDict()
-
-                result.data?.getStringExtra(FileChooser.KEY_FILEPATH)?.let {
-                    try {
-                        loadFromTextDic(it, mRecMan, mBtree, false)
-                    } catch (e: IOException) {
-                        if (e is CharacterCodingException) {
-                            SimpleMessageDialogFragment.newInstance(
-                                getString(R.string.error_text_dic_coding)
-                            ).show(supportFragmentManager, "dialog")
-                        } else {
-                            SimpleMessageDialogFragment.newInstance(
-                                getString(R.string.error_file_load, it)
-                            ).show(supportFragmentManager, "dialog")
-                        }
-                    }
-
-                    updateListItems()
+    private val importFileLauncher = registerForActivityResult(
+                                        ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            openUserDict()
+            try {
+                contentResolver.openInputStream(uri)?.use { inputStream ->
+                    loadFromTextDic(inputStream, mRecMan, mBtree, false)
+                }
+            } catch (e: IOException) {
+                if (e is CharacterCodingException) {
+                    SimpleMessageDialogFragment.newInstance(
+                        getString(R.string.error_text_dic_coding)
+                    ).show(supportFragmentManager, "dialog")
+                } else {
+                    SimpleMessageDialogFragment.newInstance(
+                        getString(R.string.error_file_load, getFileNameFromUri(this, uri))
+                    ).show(supportFragmentManager, "dialog")
                 }
             }
+            updateListItems()
         }
+    }
+
+    private val exportFileLauncher =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
+        if (uri != null) {
+            openUserDict()
+            try {
+                contentResolver.openOutputStream(uri, "wt")?.bufferedWriter()?.use {
+                    val browser = mBtree.browse()
+                    if (browser == null) {
+                        onFailToOpenUserDict()
+                    } else {
+                        val tuple = Tuple()
+                        while (browser.getNext(tuple)) {
+                            it.write(tuple.key.toString() + " " + tuple.value + "\n")
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                SimpleMessageDialogFragment.newInstance(
+                    getString(R.string.error_write_to_external_storage)
+                ).show(supportFragmentManager, "dialog")
+            }
+
+            SimpleMessageDialogFragment.newInstance(
+                getString(R.string.message_written_to_external_storage, getFileNameFromUri(this, uri))
+            ).show(supportFragmentManager, "dialog")
+        }
+    }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,46 +125,11 @@ class SKKUserDicTool : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.menu_user_dic_tool_import -> {
-                val dir = getExternalFilesDir(null)
-                if (dir != null) {
-                    val intent = Intent(this@SKKUserDicTool, FileChooser::class.java)
-                    intent.putExtra(FileChooser.KEY_MODE, FileChooser.MODE_OPEN)
-                    intent.putExtra(FileChooser.KEY_DIRNAME, dir.path)
-                    importFileActivity.launch(intent)
-                } else {
-                    val errorDialog = SimpleMessageDialogFragment.newInstance(
-                            getString(R.string.error_open_external_storage)
-                    )
-                    errorDialog.show(supportFragmentManager, "dialog")
-                }
+                importFileLauncher.launch(arrayOf("*/*"))
                 return true
             }
             R.id.menu_user_dic_tool_export -> {
-                val dir = getExternalFilesDir(null)
-                if (dir != null) {
-                    try {
-                        writeToExternalStorage(dir)
-                    } catch (e: IOException) {
-                        val errorDialog = SimpleMessageDialogFragment.newInstance(
-                                getString(R.string.error_write_to_external_storage)
-                        )
-                        errorDialog.show(supportFragmentManager, "dialog")
-                        return true
-                    }
-
-                    val msgDialog = SimpleMessageDialogFragment.newInstance(
-                            getString(
-                                    R.string.message_written_to_external_storage,
-                                    dir.path + "/" + getString(R.string.dic_name_user) + ".txt"
-                            )
-                    )
-                    msgDialog.show(supportFragmentManager, "dialog")
-                } else {
-                    val errorDialog = SimpleMessageDialogFragment.newInstance(
-                            getString(R.string.error_open_external_storage)
-                    )
-                    errorDialog.show(supportFragmentManager, "dialog")
-                }
+                exportFileLauncher.launch(getString(R.string.dic_name_user) + ".txt")
                 return true
             }
             R.id.menu_user_dic_tool_clear -> {
@@ -202,18 +188,7 @@ class SKKUserDicTool : AppCompatActivity() {
         val dialog = ConfirmationDialogFragment.newInstance(getString(R.string.error_open_user_dic))
         dialog.setListener(
             object : ConfirmationDialogFragment.Listener {
-                override fun onPositiveClick() {
-                    val dir = getExternalFilesDir(null)
-                    dir?.let {
-                        try {
-                            writeToExternalStorage(dir)
-                        } catch (e: IOException) {
-                            dlog("onFailToOpenUserDict(): $e")
-                        }
-                    }
-
-                    recreateUserDic()
-                }
+                override fun onPositiveClick() { recreateUserDic() }
                 override fun onNegativeClick() { finish() }
             })
         dialog.show(supportFragmentManager, "dialog")
@@ -286,27 +261,6 @@ class SKKUserDicTool : AppCompatActivity() {
         }
 
         mAdapter.notifyDataSetChanged()
-    }
-
-    @Throws(IOException::class)
-    private fun writeToExternalStorage(dir: File) {
-        if (!isOpened) return
-        val outputFile = File(dir, getString(R.string.dic_name_user) + ".txt")
-
-        val tuple = Tuple()
-        val browser = mBtree.browse()
-        if (browser == null) {
-            onFailToOpenUserDict()
-            return
-        }
-
-        val bw = BufferedWriter(FileWriter(outputFile), 1024)
-
-        while (browser.getNext(tuple)) {
-            bw.write(tuple.key.toString() + " " + tuple.value + "\n")
-        }
-        bw.flush()
-        bw.close()
     }
 
     private class EntryAdapter(
