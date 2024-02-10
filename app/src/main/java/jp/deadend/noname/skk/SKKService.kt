@@ -22,9 +22,12 @@ import android.text.InputType
 import android.util.Log
 import android.util.TypedValue
 import android.view.KeyEvent
+import android.view.LayoutInflater
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 
 import jp.deadend.noname.skk.engine.*
 import java.io.*
@@ -76,7 +79,11 @@ class SKKService : InputMethodService() {
                     dlog("commit user dictionary!")
                     mEngine.commitUserDictChanges()
                 }
-                COMMAND_READ_PREFS -> readPrefs()
+                COMMAND_READ_PREFS -> {
+                    setInputView(onCreateInputView())
+                    setCandidatesView(onCreateCandidatesView())
+                    readPrefs()
+                }
                 COMMAND_RELOAD_DICS -> mEngine.reopenDictionaries(openDictionaries())
                 COMMAND_SPEECH_RECOGNITION -> {
                     mPendingInput = intent.getStringExtra(SKKSpeechRecognitionResultsList.RESULTS_KEY)
@@ -184,14 +191,26 @@ class SKKService : InputMethodService() {
 
         val filter = IntentFilter(SKKMushroom.ACTION_BROADCAST)
         filter.addCategory(SKKMushroom.CATEGORY_BROADCAST)
-        registerReceiver(mMushroomReceiver, filter)
-        registerReceiver(mReloadReceiver, IntentFilter(ACTION_COMMAND))
+        ContextCompat.registerReceiver(this, mMushroomReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
+        ContextCompat.registerReceiver(this, mReloadReceiver, IntentFilter(ACTION_COMMAND), ContextCompat.RECEIVER_NOT_EXPORTED)
 
         mSpeechRecognizer.setRecognitionListener(object : RecognitionListener {
+            private fun restoreState() {
+                mFlickJPInputView?.let {
+                    it.isEnabled = true
+                    it.keyboard.keys[2].on = false // 「声」キー
+                    it.invalidateKey(2)
+                }
+                mIsRecording = false
+                mHandler.postDelayed({
+                    mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mStreamVolume, 0)
+                }, 500)
+            }
+
             override fun onBeginningOfSpeech() {}
             override fun onBufferReceived(buffer: ByteArray?) {}
             override fun onEndOfSpeech() {}
-            override fun onError(error: Int) {}
+            override fun onError(error: Int) { restoreState() }
             override fun onEvent(eventType: Int, params: Bundle?) {}
             override fun onPartialResults(partialResults: Bundle?) {}
             override fun onReadyForSpeech(params: Bundle?) {}
@@ -209,14 +228,7 @@ class SKKService : InputMethodService() {
                         }
                     }
                 }
-                mFlickJPInputView?.let {
-                    it.keyboard.keys[2].on = false // 「声」キー
-                    it.invalidateKey(2)
-                }
-                mIsRecording = false
-                mHandler.postDelayed({
-                    mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, mStreamVolume, 0)
-                }, 500)
+                restoreState()
             }
         })
         mAudioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -342,14 +354,34 @@ class SKKService : InputMethodService() {
         super.onConfigurationChanged(newConfig)
     }
 
+    private fun createNightModeContext(context: Context, isNightMode: Boolean): Context {
+        val uiModeFlag = if (isNightMode) Configuration.UI_MODE_NIGHT_YES else Configuration.UI_MODE_NIGHT_NO
+        val config = Configuration(context.resources.configuration)
+        config.uiMode = uiModeFlag or (config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv())
+        return context.createConfigurationContext(config)
+    }
+
     private fun createInputView() {
-        val context = applicationContext
+        val context = when (skkPrefs.theme) {
+            "light" -> createNightModeContext(applicationContext, false)
+            "dark"  -> createNightModeContext(applicationContext, true)
+            else    -> applicationContext
+        }
+
         mFlickJPInputView = FlickJPKeyboardView(context, null)
         mFlickJPInputView?.setService(this)
         mQwertyInputView = QwertyKeyboardView(context, null)
         mQwertyInputView?.setService(this)
         mAbbrevKeyboardView = AbbrevKeyboardView(context, null)
         mAbbrevKeyboardView?.setService(this)
+
+        if (skkPrefs.useInset) {
+            ResourcesCompat.getDrawable(context.resources, R.drawable.key_bg_inset, null)?.let {
+                mFlickJPInputView?.setKeyBackground(it)
+                mQwertyInputView?.setKeyBackground(it)
+                mAbbrevKeyboardView?.setKeyBackground(it)
+            }
+        }
 
         readPrefsForInputView()
     }
@@ -401,7 +433,7 @@ class SKKService : InputMethodService() {
 
         if (mUseSoftKeyboard || skkPrefs.useCandidatesView) {
             setCandidatesViewShown(true)
-            mCandidateViewContainer?.setAlpha(32)
+            mCandidateViewContainer?.setAlpha(96)
         }
     }
 
@@ -410,14 +442,19 @@ class SKKService : InputMethodService() {
      * needs to be generated, like [.onCreateInputView].
      */
     override fun onCreateCandidatesView(): View {
-        val container = layoutInflater.inflate(R.layout.view_candidates, null) as CandidateViewContainer
+        val context = when (skkPrefs.theme) {
+            "light" -> createNightModeContext(applicationContext, false)
+            "dark"  -> createNightModeContext(applicationContext, true)
+            else    -> applicationContext
+        }
+
+        val container = LayoutInflater.from(context).inflate(R.layout.view_candidates, null) as CandidateViewContainer
         container.initViews()
         val view = container.findViewById(R.id.candidates) as CandidateView
         view.setService(this)
         view.setContainer(container)
         mCandidateView = view
 
-        val context = applicationContext
         val sp = skkPrefs.candidatesSize
         val px = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, sp.toFloat(), context.resources.displayMetrics
@@ -454,6 +491,7 @@ class SKKService : InputMethodService() {
         mEngine.commitUserDictChanges()
         unregisterReceiver(mMushroomReceiver)
         unregisterReceiver(mReloadReceiver)
+        mSpeechRecognizer.destroy()
 
         super.onDestroy()
     }
@@ -712,24 +750,27 @@ class SKKService : InputMethodService() {
 
     fun recognizeSpeech() {
         if (mIsRecording) {
-            mSpeechRecognizer.stopListening()
+//            mSpeechRecognizer.stopListening()
             return
         }
-        mIsRecording = true
         mStreamVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0)
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-        intent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, this.packageName)
-        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false)
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
         mSpeechRecognizer.startListening(intent)
+        mFlickJPInputView?.let {
+            it.keyboard.keys[2].on = true // 「声」キー
+            it.invalidateKey(2)
+            it.isEnabled = false
+        }
+        mIsRecording = true
     }
 
     fun setCandidates(list: List<String>?) {
         if (list != null) {
-            mCandidateView?.setContents(list)
             mCandidateViewContainer?.setAlpha(255)
+            mCandidateView?.setContents(list)
         }
     }
 
@@ -739,7 +780,7 @@ class SKKService : InputMethodService() {
 
     fun clearCandidatesView() {
         mCandidateView?.setContents(listOf())
-        mCandidateViewContainer?.setAlpha(32)
+        mCandidateViewContainer?.setAlpha(96)
     }
 
     // カーソル直前に引数と同じ文字列があるなら，それを消してtrue なければfalse

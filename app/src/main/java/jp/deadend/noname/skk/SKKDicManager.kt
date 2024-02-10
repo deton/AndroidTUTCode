@@ -253,7 +253,7 @@ class SKKDicManager : AppCompatActivity() {
 
     private fun containsName(s: String) = mDics.any { s == it.key }
 
-    private class TupleAdapter constructor(
+    private class TupleAdapter(
             context: Context,
             items: List<Tuple>
     ) : ArrayAdapter<Tuple>(context, 0, items) {

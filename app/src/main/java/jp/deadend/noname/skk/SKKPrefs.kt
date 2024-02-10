@@ -43,6 +43,14 @@ class SKKPrefs(context: Context) {
         get() = prefs.getString(res.getString(R.string.prefkey_curve_sensitivity), null) ?: "high"
         set(value) = prefs.edit().putString(res.getString(R.string.prefkey_curve_sensitivity), value).apply()
 
+    var theme: String
+        get() = prefs.getString(res.getString(R.string.prefkey_theme), null) ?: "default"
+        set(value) = prefs.edit().putString(res.getString(R.string.prefkey_theme), value).apply()
+
+    var useInset: Boolean
+        get() = prefs.getBoolean(res.getString(R.string.prefkey_use_inset), false)
+        set(value) = prefs.edit().putBoolean(res.getString(R.string.prefkey_use_inset), value).apply()
+
     var useSoftKey: String
         get() = prefs.getString(res.getString(R.string.prefkey_use_softkey), null) ?: "auto"
         set(value) = prefs.edit().putString(res.getString(R.string.prefkey_use_softkey), value).apply()

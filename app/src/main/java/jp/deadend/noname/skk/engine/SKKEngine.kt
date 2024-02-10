@@ -503,7 +503,7 @@ class SKKEngine(
             }
             mUserDict.addEntry(regInfo.key, regEntryStr, regInfo.okurigana)
             mUserDict.commitChanges()
-            if (regInfo.okurigana == null || regInfo.okurigana.isEmpty()) {
+            if (regInfo.okurigana.isNullOrEmpty()) {
                 commitTextSKK(regInfo.entry, 1)
             } else {
                 commitTextSKK(regInfo.entry.append(regInfo.okurigana), 1)
@@ -544,7 +544,7 @@ class SKKEngine(
             for (s in list2) {
                 when {
                     mOkurigana == null
-                     || entry.okuri_blocks.any { it.first == mOkurigana && it.second == s } -> {
+                     || entry.okuriBlocks.any { it.first == mOkurigana && it.second == s } -> {
                         //個人辞書の候補を先頭に追加
                         list1.remove(s)
                         list1.add(idx, s)

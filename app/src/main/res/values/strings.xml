@@ -18,13 +18,6 @@
 	<string name="label_dicmanager_input_name">辞書の名前を入力</string>
 	<string name="label_dicmanager_reset">辞書を初期化</string>
 
-	<string name="label_filechooser_save_as">名前をつけて保存</string>
-	<string name="label_filechooser_open">ファイルを開く</string>
-	<string name="label_filechooser_opendir">ディレクトリを開く</string>
-    <string name="label_filechooser_parent_dir">&#9166; 親ディレクトリ</string>
-	<string name="error_access_failed">アクセスできません: %1$s</string>
-    <string name="error_open_external_storage">外部ストレージが開けません</string>
-
 	<string name="message_confirm_remove">このエントリを削除しますか？</string>
 	<string name="message_confirm_clear">現在のユーザー辞書の内容はすべて消去されます。よろしいですか？</string>
 	<string name="message_confirm_clear_dics">現在の変換辞書をすべて削除し、基本の辞書だけにします。よろしいですか？</string>
@@ -34,6 +27,7 @@
 	<string name="message_dic_extracted">変換辞書を解凍しました</string>
 	<string name="message_main_dic">これは基本の変換辞書なので、削除できません</string>
 
+	<string name="error_access_failed">アクセスできません: %1$s</string>
 	<string name="error_dic">辞書ファイルを開けません。設定画面から、辞書を初期化してみてください</string>
 	<string name="error_open_dicfile">辞書ファイルを開けません</string>
 	<string name="error_user_dic">ユーザー辞書が開けません。設定画面から、ユーザー辞書を初期化してみてください</string>
@@ -54,6 +48,8 @@
 	<string translatable="false" name="prefkey_flick_sensitivity">PrefKeyFlickSensitivity</string>
 	<string translatable="false" name="prefkey_flick_sensitivity2">PrefKeyFlickSensitivity2</string>
 	<string translatable="false" name="prefkey_curve_sensitivity">PrefKeyCurveSensitivitye</string>
+	<string translatable="false" name="prefkey_theme">PrefKeyTheme</string>
+	<string translatable="false" name="prefkey_use_inset">PrefKeyInset</string>
 	<string translatable="false" name="prefkey_use_softkey">PrefKeyUseSoftKey</string>
 	<string translatable="false" name="prefkey_use_popup">PrefKeyUsePopup</string>
 	<string translatable="false" name="prefkey_fixed_popup">PrefKeyFixedPopup</string>

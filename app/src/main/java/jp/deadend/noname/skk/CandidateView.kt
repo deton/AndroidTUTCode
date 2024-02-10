@@ -65,7 +65,7 @@ class CandidateView(context: Context, attrs: AttributeSet) : View(context, attrs
     init {
         val r = context.resources
 
-        mSelectionHighlight = ResourcesCompat.getDrawable(r, R.drawable.ic_suggest_scroll_background, null)
+        mSelectionHighlight = ResourcesCompat.getDrawable(r, R.drawable.suggest_scroll_button_bg, null)
         mSelectionHighlight?.state = intArrayOf(
                 android.R.attr.state_enabled,
                 android.R.attr.state_focused,
@@ -90,7 +90,7 @@ class CandidateView(context: Context, attrs: AttributeSet) : View(context, attrs
 
         mGestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
             override fun onScroll(
-                    e1: MotionEvent,
+                    e1: MotionEvent?,
                     e2: MotionEvent,
                     distanceX: Float,
                     distanceY: Float
@@ -177,8 +177,8 @@ class CandidateView(context: Context, attrs: AttributeSet) : View(context, attrs
         mTotalWidth = x
     }
 
-    override fun onDraw(canvas: Canvas?) {
-        if (canvas != null) super.onDraw(canvas)
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
 
         val height = height
         val paint = mPaint
@@ -198,31 +198,27 @@ class CandidateView(context: Context, attrs: AttributeSet) : View(context, attrs
                     && touchX + scrollX < mWordX[i] + mWordWidth[i]
                     && !scrolled
             ) {
-                if (canvas != null) {
-                    canvas.translate(mWordX[i].toFloat(), 0f)
-                    mSelectionHighlight?.setBounds(0, 0, mWordWidth[i], height)
-                    mSelectionHighlight?.draw(canvas)
-                    canvas.translate((-mWordX[i]).toFloat(), 0f)
-                }
+                canvas.translate(mWordX[i].toFloat(), 0f)
+                mSelectionHighlight?.setBounds(0, 0, mWordWidth[i], height)
+                mSelectionHighlight?.draw(canvas)
+                canvas.translate((-mWordX[i]).toFloat(), 0f)
                 mSelectedIndex = i
             }
 
-            if (canvas != null) {
-                if (i == mChoosedIndex) {
-                    paint.isFakeBoldText = true
-                    paint.color = mColorRecommended
-                } else {
-                    paint.color = mColorOther
-                }
-                canvas.drawText(mSuggestions[i], (mWordX[i] + X_GAP).toFloat(), y.toFloat(), paint)
+            if (i == mChoosedIndex) {
+                paint.isFakeBoldText = true
+                paint.color = mColorRecommended
+            } else {
                 paint.color = mColorOther
-                canvas.drawLine(
-                        mWordX[i].toFloat() + mWordWidth[i].toFloat() + 0.5f, 0f,
-                        mWordX[i].toFloat() + mWordWidth[i].toFloat() + 0.5f, (height + 1).toFloat(),
-                        paint
-                )
-                paint.isFakeBoldText = false
             }
+            canvas.drawText(mSuggestions[i], (mWordX[i] + X_GAP).toFloat(), y.toFloat(), paint)
+            paint.color = mColorOther
+            canvas.drawLine(
+                    mWordX[i].toFloat() + mWordWidth[i].toFloat() + 0.5f, 0f,
+                    mWordX[i].toFloat() + mWordWidth[i].toFloat() + 0.5f, (height + 1).toFloat(),
+                    paint
+            )
+            paint.isFakeBoldText = false
         }
 
         if (scrolled && mTargetScrollX != getScrollX()) scrollToTarget()

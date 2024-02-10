@@ -193,9 +193,9 @@ open class KeyboardView @JvmOverloads constructor(
         if (mGestureDetector == null) {
             mGestureDetector = GestureDetector(context, object : SimpleOnGestureListener() {
                 override fun onFling(
-                    me1: MotionEvent, me2: MotionEvent, velocityX: Float, velocityY: Float
+                    me1: MotionEvent?, me2: MotionEvent, velocityX: Float, velocityY: Float
                 ): Boolean {
-                    if (mPossiblePoly) return false
+                    if (mPossiblePoly || me1 == null) return false
                     val absX = abs(velocityX)
                     val absY = abs(velocityY)
                     val deltaX = me2.x - me1.x
@@ -272,6 +272,10 @@ open class KeyboardView @JvmOverloads constructor(
         mMiniKeyboardOffsetX = x
         mMiniKeyboardOffsetY = y
         if (mPreviewPopup.isShowing) { mPreviewPopup.dismiss() }
+    }
+
+    fun setKeyBackground(d: Drawable) {
+        mKeyBackground = d
     }
 
     override fun onClick(v: View) {
@@ -667,6 +671,7 @@ open class KeyboardView @JvmOverloads constructor(
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (!isEnabled) { return true }
         // Convert multi-pointer up/down events to single up/down events to
         // deal with the typical multi-pointer behavior of two-thumb typing
         val pointerCount = event.pointerCount
