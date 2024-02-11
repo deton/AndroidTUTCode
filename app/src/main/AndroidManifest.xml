@@ -3,7 +3,7 @@
 	<uses-permission android:name="android.permission.RECORD_AUDIO" />
 	<queries>
 		<intent>
-			<action android:name="android.speech.action.RECOGNIZE_SPEECH"/>
+			<action android:name="android.speech.RecognitionService"/>
 		</intent>
 		<intent>
 			<action android:name="com.adamrocker.android.simeji.ACTION_INTERCEPT" />

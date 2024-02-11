@@ -44,7 +44,7 @@ class CandidateViewContainer(screen: Context, attrs: AttributeSet) : LinearLayou
     }
 
     fun setAlpha(alpha: Int) {
-        background.alpha = alpha
+        binding.candidates.background.alpha = alpha
         binding.candidateLeft.alpha = alpha / 255f
         binding.candidateRight.alpha = alpha / 255f
         binding.candidateLeft.background.alpha = alpha
@@ -54,6 +54,12 @@ class CandidateViewContainer(screen: Context, attrs: AttributeSet) : LinearLayou
     fun setScrollButtonsEnabled(left: Boolean, right: Boolean) {
         binding.candidateLeft.isEnabled = left
         binding.candidateRight.isEnabled = right
+        val alphaLeft = if (left) ALPHA_ON else ALPHA_OFF
+        val alphaRight = if (right) ALPHA_ON else ALPHA_OFF
+        binding.candidateLeft.alpha = alphaLeft / 255f
+        binding.candidateRight.alpha = alphaRight / 255f
+        binding.candidateLeft.background.alpha = alphaLeft
+        binding.candidateRight.background.alpha = alphaRight
     }
 
     fun setSize(px: Int) {
@@ -66,5 +72,10 @@ class CandidateViewContainer(screen: Context, attrs: AttributeSet) : LinearLayou
         requestLayout()
 
         mFontSize = px
+    }
+
+    companion object {
+        private const val ALPHA_OFF = 96
+        private const val ALPHA_ON = 255
     }
 }

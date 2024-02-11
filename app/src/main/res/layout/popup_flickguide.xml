@@ -6,9 +6,10 @@
 	android:layout_height="120dp" >
 	<TextView
 		android:id="@+id/labelA"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="22sp"
 		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="24sp"
@@ -17,9 +18,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelI"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="22sp"
 		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="24sp"
@@ -29,9 +31,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelU"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="22sp"
 		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="24sp"
@@ -41,9 +44,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelE"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="22sp"
 		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="24sp"
@@ -53,9 +57,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelO"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="22sp"
 		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="24sp"
@@ -65,8 +70,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelLeftA"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="12sp"
+		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="16sp"
@@ -76,8 +83,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelRightA"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="12sp"
+		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="16sp"
@@ -87,8 +96,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelLeftI"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="12sp"
+		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="16sp"
@@ -98,8 +109,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelRightI"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="12sp"
+		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="16sp"
@@ -109,8 +122,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelLeftU"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="12sp"
+		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="16sp"
@@ -120,8 +135,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelRightU"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="12sp"
+		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="16sp"
@@ -131,8 +148,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelLeftE"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="12sp"
+		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="16sp"
@@ -142,8 +161,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelRightE"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="12sp"
+		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="16sp"
@@ -153,8 +174,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelLeftO"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="12sp"
+		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="16sp"
@@ -164,8 +187,10 @@
 		/>
 	<TextView
 		android:id="@+id/labelRightO"
-		android:textColor="#FF000000"
+		android:textColor="@color/key_char_color"
 		android:textSize="12sp"
+		android:includeFontPadding="false"
+		android:fallbackLineSpacing="false"
 		android:gravity="center"
 		android:background="@drawable/popup_label"
 		android:layout_width="16sp"
