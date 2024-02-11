@@ -15,7 +15,7 @@ class SKKUserDictionary private constructor (
     private var mOldKey: String = ""
     private var mOldValue: String = ""
 
-    class Entry(val candidates: MutableList<String>, val okuri_blocks: MutableList<Pair<String, String>>)
+    class Entry(val candidates: MutableList<String>, val okuriBlocks: MutableList<Pair<String, String>>)
 
     fun getEntry(key: String): Entry? {
         val cd = mutableListOf<String>()
@@ -71,7 +71,7 @@ class SKKUserDictionary private constructor (
             val okrs = mutableListOf<Pair<String, String>>()
             if (okuri != null) {
                 var matched = false
-                for (pair in entry.okuri_blocks) {
+                for (pair in entry.okuriBlocks) {
                     if (pair.first == okuri && pair.second == value) {
                         okrs.add(0, pair)
                         matched = true

@@ -250,8 +250,7 @@ open class Keyboard {
         row.verticalGap = defaultVerticalGap
         row.rowEdgeFlags = EDGE_TOP or EDGE_BOTTOM
         val maxColumns = if (columns == -1) Int.MAX_VALUE else columns
-        for (i in 0 until characters.length) {
-            val c = characters[i]
+        for (c in characters) {
             if (column >= maxColumns
                 || x + defaultKeyWidth + horizontalPadding > mDisplayWidth
             ) {
