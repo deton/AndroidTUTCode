@@ -122,6 +122,7 @@ class SKKSettingsActivity : AppCompatActivity(),
         super.onPause()
 
         val intent = Intent(SKKService.ACTION_COMMAND)
+        intent.setPackage(packageName)
         intent.putExtra(SKKService.KEY_COMMAND, SKKService.COMMAND_READ_PREFS)
         sendBroadcast(intent)
     }
