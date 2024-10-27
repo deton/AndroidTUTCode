@@ -28,7 +28,7 @@ object SKKHiraganaState : SKKState {
         val hchr = context.romaji2kana(composing.toString())
         when (hchr) {
             null -> { // ローマ字シーケンス外の文字が来た場合はそのまま確定
-                context.commitTextSKK(composing, 1)
+                context.commitTextSKK(composing)
                 composing.setLength(0)
             }
             "@cont" -> { // ローマ字内の文字ならComposingに積む
@@ -176,7 +176,7 @@ object SKKHiraganaState : SKKState {
     override fun processKey(context: SKKEngine, pcode: Int) {
         if (context.changeInputMode(pcode, true)) return
         processKana(context, pcode) { engine, hchr ->
-            engine.commitTextSKK(hchr, 1)
+            engine.commitTextSKK(hchr)
             engine.mComposing.setLength(0)
         }
     }

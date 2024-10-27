@@ -9,7 +9,7 @@ object SKKASCIIState : SKKState {
     override fun handleEisuKey(context: SKKEngine) {}
 
     override fun processKey(context: SKKEngine, pcode: Int) {
-        context.commitTextSKK(pcode.toChar().toString(), 1)
+        context.commitTextSKK(pcode.toChar().toString())
     }
 
     override fun afterBackspace(context: SKKEngine) {}
