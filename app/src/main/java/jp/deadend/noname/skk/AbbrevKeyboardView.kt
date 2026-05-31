@@ -21,6 +21,12 @@ class AbbrevKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener {
         isShifted = false
     }
 
+    // heightはパーセント
+    internal fun setHeight(height: Int) {
+        mKeyboard.resizeByPercentageOfScreen(100, height)
+        invalidateAllKeys()
+    }
+
     fun setService(listener: SKKService) {
         mService = listener
     }

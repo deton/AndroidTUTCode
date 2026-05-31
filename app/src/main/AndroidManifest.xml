@@ -32,6 +32,10 @@
 				<category android:name="android.intent.category.LAUNCHER"/>
 			</intent-filter>
 		</activity>
+		<activity android:name=".TextViewActivity"
+			android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+			android:label="@string/label_stacktrace_activity" >
+		</activity>
 		<activity android:name=".SKKUserDicTool"
 			android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
 			android:label="@string/label_dictool_activity" >

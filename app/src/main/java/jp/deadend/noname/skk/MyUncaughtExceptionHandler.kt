@@ -5,8 +5,6 @@ import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.PrintWriter
 import java.lang.Thread.UncaughtExceptionHandler
-import java.text.SimpleDateFormat
-import java.util.Date
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager.NameNotFoundException
@@ -17,15 +15,15 @@ internal class MyUncaughtExceptionHandler(val context: Context) : UncaughtExcept
     private val mVersionName: String
 
     init {
-        val packInfo: PackageInfo
-        try {
-            packInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        val packInfo: PackageInfo? = try {
+            context.packageManager.getPackageInfo(context.packageName, 0)
         } catch (e: NameNotFoundException) {
             e.printStackTrace()
-            error("MyUncaughtExceptionHandler: name not found")
+            dlog("MyUncaughtExceptionHandler: name not found")
+            null
         }
 
-        mVersionName = packInfo.versionName
+        mVersionName = packInfo?.versionName ?: "unknown"
     }
 
     override fun uncaughtException(th: Thread, t: Throwable) {
@@ -40,15 +38,12 @@ internal class MyUncaughtExceptionHandler(val context: Context) : UncaughtExcept
 
     @Throws(FileNotFoundException::class)
     private fun saveState(e: Throwable) {
-        val d = Date()
-        val df = SimpleDateFormat("yyyyMMddHHmm")
-        val dateTimeStr = df.format(d)
-
         val dir = context.getExternalFilesDir(null) ?: return
-        val file = File(dir, "SKK_strace_$dateTimeStr.txt")
+        val file = File(dir, context.getString(R.string.strace_file_name))
         val pw = PrintWriter(FileOutputStream(file))
 
-        pw.println("This is a crash report of SKK.")
+        pw.println("以下は、SKKが強制終了したときの情報です。")
+        pw.println("内容を作者に連絡していただくと、問題の修正に役立つかもしれません。")
         pw.println()
         pw.println("Device:  " + Build.DEVICE)
         pw.println("Model:   " + Build.MODEL)
