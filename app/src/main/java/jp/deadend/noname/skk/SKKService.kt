@@ -344,7 +344,9 @@ class SKKService : InputMethodService() {
             else   -> (24 * density + 0.5f).toInt()
         }
         qwerty.setFlickSensitivity(sensitivity)
+        qwerty.setHeight((keyHeight * 1.2).toInt())
         qwerty.backgroundAlpha = 255 * alpha / 100
+        abbrev.setHeight((keyHeight * 1.5).toInt())
         abbrev.backgroundAlpha = 255 * alpha / 100
 
         qwerty.loadFrequencyList(resources.assets.open(FREQUENCY_LIST_FILE))
@@ -406,6 +408,9 @@ class SKKService : InputMethodService() {
         mFlickJPInputView = null
         mQwertyInputView = null
         mAbbrevKeyboardView = null
+        mCandidateViewContainer?.removeAllViews()
+        mCandidateViewContainer = null
+        mCandidateView = null
         super.onConfigurationChanged(newConfig)
     }
 
@@ -543,8 +548,21 @@ class SKKService : InputMethodService() {
     override fun onFinishInput() {
         super.onFinishInput()
 
+        clearCandidatesView()
         mQwertyInputView?.handleBack()
         mAbbrevKeyboardView?.handleBack()
+    }
+
+    override fun onFinishInputView(finishingInput: Boolean) {
+        super.onFinishInputView(finishingInput)
+
+        clearCandidatesView()
+    }
+
+    override fun onUpdateEditorToolType(toolType: Int) {
+        super.onUpdateEditorToolType(toolType)
+
+        clearCandidatesView()
     }
 
     override fun onDestroy() {

@@ -41,6 +41,14 @@ class QwertyKeyboardView : KeyboardView, KeyboardView.OnKeyboardActionListener {
         return super.handleBack()
     }
 
+    // heightはパーセント
+    internal fun setHeight(height: Int) {
+        mLatinKeyboard.resizeByPercentageOfScreen(100, height)
+        mSymbolsKeyboard.resizeByPercentageOfScreen(100, height)
+        mSymbolsShiftedKeyboard.resizeByPercentageOfScreen(100, height)
+        invalidateAllKeys()
+    }
+
     @Throws(IOException::class)
     internal fun loadFrequencyList(inputStream: InputStream) {
         mList.clear()

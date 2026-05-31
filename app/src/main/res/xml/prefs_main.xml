@@ -45,4 +45,18 @@
     <Preference
         app:fragment="jp.deadend.noname.skk.SKKSettingsActivity$SettingsSoftKeyFragment"
         app:title="@string/label_pref_softkeyboard"/>
+    <Preference
+        android:enabled="false">
+    </Preference>
+    <PreferenceCategory>
+        <Preference
+            app:title="@string/label_stacktrace_activity"
+            >
+            <intent android:action="android.intent.action.MAIN"
+                android:targetPackage="io.github.deton.androidtutcode"
+                android:targetClass="jp.deadend.noname.skk.TextViewActivity">
+                <extra android:name="@string/key_text_file_name" android:value="@string/strace_file_name" />
+            </intent>
+        </Preference>
+    </PreferenceCategory>
 </PreferenceScreen>

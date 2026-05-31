@@ -43,11 +43,26 @@ class SKKUserDictionary private constructor (
             // 送りがなブロック
             val regex = """/\[.*?/\]""".toRegex()
             regex.findAll(value).forEach { result: MatchResult ->
-                okr.add(
-                    result.value.substring(2, result.value.length - 2) // "/[" と "/]" をとる
-                        .split('/')
-                        .let { Pair(it[0], it[1]) }
-                )
+                result.value.substring(2, result.value.length - 2) // "/[" と "/]" をとる
+                    .split('/')
+                    .let {
+                        if (it.size == 2) {
+                            okr.add( Pair(it[0], it[1]) )
+                        } else {
+                            // 送りがなブロックが異常だった場合、エントリを消す
+                            dlog("Error in the okuri block: $value")
+                            try {
+                                mBTree.remove(key)
+                                mRecMan.commit()
+                            } catch (e: IOException) {
+                                throw RuntimeException(e)
+                            }
+
+                            mOldValue = ""
+                            mOldKey = ""
+                            return null
+                        }
+                    }
             }
         }
 
