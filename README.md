@@ -1,7 +1,7 @@
 AndroidTUTCode
 ==============
 
-[SKK for Android 3.4](http://ray-mizuki.la.coocan.jp/software/skk_jp.html)
+[SKK for Android](https://github.com/deadend-noname/AndroidSKK)
 をベースに、TUT-Code用の変更をしたものです。
 
 ハードウェアキーボードでの使用のみ想定しています。
@@ -77,5 +77,5 @@ TUT-Codeで使う3段分のキーは通常のキーボードレイアウトに�
 [LICENSE](./LICENSE)。Apache ライセンスが適用されます。
 
 ## リンク
-* [海月玲二氏の SKK for Android](http://ray-mizuki.la.coocan.jp/software/skk_jp.html)
+* [海月玲二氏の SKK for Android](https://github.com/deadend-noname/AndroidSKK)
 * [KantyokuDroid](https://nixeneko.hatenablog.com/entry/2015/12/25/235939)
