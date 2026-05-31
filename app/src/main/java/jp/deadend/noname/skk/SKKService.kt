@@ -331,18 +331,6 @@ class SKKService : InputMethodService() {
         return result
     }
 
-    override fun onBindInput() {
-        super.onBindInput()
-
-        if (mPendingInput.isNullOrEmpty()) {
-            return
-        } else {
-            currentInputConnection.commitText(mPendingInput, 1)
-            mPendingInput = null
-            keyDownUp(KeyEvent.KEYCODE_DPAD_CENTER)
-        }
-    }
-
     /**
      * This is the point where you can do all of your UI initialization.  It
      * is called after creation and any configuration change.
@@ -416,6 +404,14 @@ class SKKService : InputMethodService() {
      */
     override fun onStartInput(attribute: EditorInfo, restarting: Boolean) {
         super.onStartInput(attribute, restarting)
+
+        if (mPendingInput.isNullOrEmpty()) {
+            return
+        } else {
+            currentInputConnection.commitText(mPendingInput, 1)
+            mPendingInput = null
+            keyDownUp(KeyEvent.KEYCODE_DPAD_CENTER)
+        }
 
         if (mStickyShift) mShiftKey.clearState()
         if (mSandS) {
