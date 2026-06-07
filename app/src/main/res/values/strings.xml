@@ -11,12 +11,14 @@
 	<string name="label_export">エクスポート</string>
 	<string name="label_clear_userdic">ユーザー辞書初期化</string>
 	<string name="label_no_entry_found">エントリがありません</string>
+	<string name="label_no_strace_found">AndroidTUTCodeが強制終了した場合、ここにエラーログが表示されます。</string>
 	<string name="label_dicmanager_activity">辞書管理</string>
 	<string name="label_dicmanager_ldic">交ぜ書き変換辞書</string>
 	<string name="label_dicmanager_optionaldic">追加辞書</string>
 	<string name="label_dicmanager_add">辞書を追加</string>
 	<string name="label_dicmanager_input_name">辞書の名前を入力</string>
 	<string name="label_dicmanager_reset">辞書を初期化</string>
+	<string name="label_stacktrace_activity">強制終了時のログを表示</string>
 
 	<string name="message_confirm_remove">このエントリを削除しますか？</string>
 	<string name="message_confirm_clear">現在のユーザー辞書の内容はすべて消去されます。よろしいですか？</string>
@@ -67,6 +69,9 @@
 	<string translatable="false" name="prefkey_sticky_meta">PrefKeyStickyMeta</string>
 	<string translatable="false" name="prefkey_sands">PrefKeySandS</string>
 	<string translatable="false" name="prefkey_optional_dics">PrefKeyOptionalDics</string>
+
+	<string translatable="false" name="key_text_file_name">KeyTextFileName</string>
+	<string translatable="false" name="strace_file_name">AndroidTUTCode_strace.txt</string>
 
 	<string translatable="false" name="btree_name">skk_dict</string>
 	<string translatable="false" name="dic_name_main">skk_dict_btree</string>
